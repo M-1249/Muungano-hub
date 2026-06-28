@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia ya Muungano | Union Hub Tanzania</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="logo">UNION<span>HUB</span> TZ</a>
+  <button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html" data-i18n="nav_home">Home</a>
+    <a href="history.html" data-i18n="nav_history">Historia</a>
+    <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
+    <a href="makala.html">Makala</a>
+    <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
+    <a href="dashboard.html" data-i18n="nav_downloads">Downloads</a>
+    <a href="login.html" class="nav-cta" data-i18n="nav_login">Login</a>
+    <button class="lang-btn" id="langToggleBtn" onclick="toggleLang()">EN</button>
+  </div>
+</nav>
+
+<header class="hero" style="padding:50px 20px 60px">
+  <h1>Historia ya Muungano</h1>
+  <p>Safari ya kuunganika kwa Tanganyika na Zanzibar kuwa Taifa moja.</p>
+</header>
+
+<section class="section">
+  <span class="section-eyebrow">Nyuma ya Pazia</span>
+  <h2 class="section-title">Tanganyika na Zanzibar Kabla ya Muungano</h2>
+  <p class="section-lead">
+    Tanganyika ilipata uhuru wake kutoka Uingereza tarehe 9 Disemba 1961, ikiongozwa na Mwalimu
+    Julius Kambarage Nyerere. Zanzibar nayo ilipata uhuru wake mwaka 1963, kabla ya Mapinduzi ya
+    Zanzibar yaliyofanyika tarehe 12 Januari 1964 yakiongozwa na chama cha Afro-Shirazi (ASP) chini
+    ya Sheikh Abeid Amani Karume.
+  </p>
+</section>
+
+<section class="section">
+  <span class="section-eyebrow">Tukio Kuu</span>
+  <h2 class="section-title">Kuzaliwa kwa Muungano - 26 Aprili 1964</h2>
+  <div class="card-grid">
+    <div class="card">
+      <span class="icon">📜</span>
+      <h3>Mkataba wa Muungano</h3>
+      <p>Nyerere na Karume walisaini Mkataba wa Muungano tarehe 22 Aprili 1964, ulioridhiwa rasmi tarehe 26 Aprili 1964.</p>
+    </div>
+    <div class="card">
+      <span class="icon">🇹🇿</span>
+      <h3>Jina Jipya la Taifa</h3>
+      <p>Tanganyika na Zanzibar ziliunganishwa kuwa Jamhuri ya Muungano wa Tanzania, jina lililobuniwa kwa kuchanganya herufi za majina mawili.</p>
+    </div>
+    <div class="card">
+      <span class="icon">🤝</span>
+      <h3>Uongozi wa Pamoja</h3>
+      <p>Nyerere alikuwa Rais wa kwanza wa Jamhuri ya Muungano, na Karume Makamu wa Rais wa Kwanza.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <span class="section-eyebrow">Mfululizo wa Matukio</span>
+  <h2 class="section-title">Ratiba ya Matukio Muhimu</h2>
+  <div class="card-grid">
+    <div class="card"><h3>9 Disemba 1961</h3><p>Tanganyika inapata Uhuru.</p></div>
+    <div class="card"><h3>10 Disemba 1963</h3><p>Zanzibar inapata Uhuru kutoka Uingereza.</p></div>
+    <div class="card"><h3>12 Januari 1964</h3><p>Mapinduzi ya Zanzibar yanafanyika.</p></div>
+    <div class="card"><h3>26 Aprili 1964</h3><p>Muungano wa Tanganyika na Zanzibar unazaliwa.</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <span class="section-eyebrow">Jipime</span>
+  <h2 class="section-title">Umejifunza Nini?</h2>
+  <p class="section-lead">Jaribu maarifa yako kwa Quiz ya maswali 10 kuhusu historia hii.</p>
+  <a href="quiz.html" class="btn btn-primary">Anza Quiz</a>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <h4>Union Hub TZ</h4>
+      <a href="history.html" data-i18n="nav_history">Historia</a>
+      <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
+    <a href="makala.html">Makala</a>
+      <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
+    </div>
+    <div>
+      <h4>Akaunti</h4>
+      <a href="login.html">Login</a>
+      <a href="register.html">Jisajili</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+    <div>
+      <h4>Mawasiliano</h4>
+      <a href="#">Facebook</a>
+      <a href="#">Instagram</a>
+      <a href="#">Wasiliana Nasi</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
+    <span style="font-size:0.75rem;color:#777">Tovuti hii imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/chatbot.js"></script>
+</body>
+</html>

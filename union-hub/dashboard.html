@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | Union Hub Tanzania</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="logo">UNION<span>HUB</span> TZ</a>
+  <button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html" data-i18n="nav_home">Home</a>
+    <a href="history.html" data-i18n="nav_history">Historia</a>
+    <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
+    <a href="makala.html">Makala</a>
+    <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
+    <a href="dashboard.html" data-i18n="nav_downloads">Downloads</a>
+    <a href="#" class="nav-cta" onclick="logout()" data-i18n="nav_logout">Logout</a>
+    <button class="lang-btn" id="langToggleBtn" onclick="toggleLang()">EN</button>
+  </div>
+</nav>
+
+<section class="section" style="padding-top:40px">
+  <div class="dash-header">
+    <h1 id="welcomeMsg">Karibu</h1>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="num" id="quizCount">0</div>
+      <div class="label">Quiz Zilizofanyika</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="bestScore">0/10</div>
+      <div class="label">Alama Bora</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="lastDate">-</div>
+      <div class="label">Mara ya Mwisho</div>
+    </div>
+  </div>
+
+  <span class="section-eyebrow">Kituo cha Upakuaji</span>
+  <h2 class="section-title">Download Centre</h2>
+  <div class="download-list" id="downloadCentreList">
+    <p style="color:#888">Inapakia nyaraka...</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-bottom">
+    &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
+    <span style="font-size:0.75rem;color:#777">Tovuti hii imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/chatbot.js"></script>
+<script>
+const user = requireLogin(function(user) {
+  document.getElementById('welcomeMsg').textContent = 'Karibu, ' + user.name;
+  const scores = user.scores || [];
+  document.getElementById('quizCount').textContent = scores.length;
+  if (scores.length) {
+    const best = Math.max(...scores.map(s => s.score));
+    document.getElementById('bestScore').textContent = best + '/10';
+    document.getElementById('lastDate').textContent = scores[scores.length - 1].date;
+  }
+  if (user.role === 'admin') {
+    const adminLink = document.createElement('a');
+    adminLink.href = 'admin.html';
+    adminLink.className = 'btn btn-primary';
+    adminLink.style.marginTop = '10px';
+    adminLink.textContent = '🔐 Fungua Admin Panel';
+    document.querySelector('.dash-header').appendChild(adminLink);
+  }
+  loadDownloadCentre();
+});
+
+async function loadDownloadCentre() {
+  const list = document.getElementById('downloadCentreList');
+  try {
+    const snap = await db.collection('downloads').orderBy('createdAt', 'desc').get();
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
+      return;
+    }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <span>${d.icon || '📄'} ${d.title}</span>
+        <a href="${d.url}" target="_blank" class="dl-btn">Pakua</a>
+      `;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
+  }
+}
+</script>
+</body>
+</html>
