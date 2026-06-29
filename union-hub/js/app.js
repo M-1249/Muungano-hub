@@ -2,6 +2,29 @@
    UNION HUB TANZANIA - app.js
    ============================ */
 
+/* ---------- BRANDING (Logo & Theme) ---------- */
+async function applyBranding() {
+  if (typeof db === 'undefined') return;
+  try {
+    const brandDoc = await db.collection('siteSettings').doc('branding').get();
+    if (brandDoc.exists && brandDoc.data().logoUrl) {
+      const logo = document.querySelector('.navbar .logo');
+      if (logo) {
+        logo.innerHTML = `<img src="${brandDoc.data().logoUrl}" style="height:36px;vertical-align:middle">`;
+      }
+    }
+    const themeDoc = await db.collection('siteSettings').doc('theme').get();
+    if (themeDoc.exists) {
+      const t = themeDoc.data();
+      const hero = document.querySelector('.hero');
+      if (hero && t.heroColor1) {
+        hero.style.background = `linear-gradient(135deg, ${t.heroColor1} 0%, ${t.heroColor2} 60%, ${t.heroColor3} 100%)`;
+      }
+    }
+  } catch (err) { /* ignore */ }
+}
+document.addEventListener('DOMContentLoaded', applyBranding);
+
 /* ---------- DYNAMIC NAV ITEMS (added by Admin) ---------- */
 async function loadCustomNavItems() {
   const navLinks = document.getElementById('navLinks');
@@ -65,6 +88,7 @@ async function registerUser(name, email, password) {
 async function loginUser(email, password) {
   try {
     const cred = await auth.signInWithEmailAndPassword(email, password);
+    await db.collection('users').doc(cred.user.uid).update({ lastLogin: new Date().toISOString() }).catch(() => {});
     const doc = await db.collection('users').doc(cred.user.uid).get();
     uh_currentUserData = { uid: cred.user.uid, ...doc.data() };
     return { ok: true };

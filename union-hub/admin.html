@@ -66,6 +66,57 @@
   <h3 style="margin-bottom:12px">Maswali Yaliyopo (<span id="qCount">0</span>)</h3>
   <div class="download-list" id="questionList"></div>
 
+  <!-- BRANDING: LOGO & COLORS -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Branding</span>
+  <h2 class="section-title">Logo na Rangi za Tovuti</h2>
+
+  <div class="quiz-box" style="margin-bottom:30px">
+    <form id="logoForm" onsubmit="return handleSetLogo(event)">
+      <div class="field">
+        <label>Link ya Logo (picha, hiari)</label>
+        <input type="url" id="logoUrl" placeholder="https://i.imgur.com/xxxxx.png">
+        <p style="font-size:0.78rem;color:#888;margin-top:5px">Acha tupu kuendelea kutumia logo ya maandishi "UNIONHUB TZ".</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary" style="flex:1">Weka Logo</button>
+        <button type="button" class="btn btn-secondary" style="flex:1;color:#c0392b;border-color:#c0392b" onclick="removeLogo()">Futa Logo</button>
+      </div>
+      <p id="logoMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+    </form>
+  </div>
+
+  <div class="quiz-box" style="margin-bottom:30px">
+    <form id="themeForm" onsubmit="return handleSetTheme(event)">
+      <p style="font-weight:600;margin-bottom:14px">Rangi za Hero Section (Ukurasa wa Mwanzo)</p>
+      <div class="field">
+        <label>Rangi ya Kwanza</label>
+        <input type="color" id="heroColor1" value="#0d1310" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
+      </div>
+      <div class="field">
+        <label>Rangi ya Kati</label>
+        <input type="color" id="heroColor2" value="#1b7a3d" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
+      </div>
+      <div class="field">
+        <label>Rangi ya Mwisho</label>
+        <input type="color" id="heroColor3" value="#1c6fa5" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Badilisha Rangi za Hero</button>
+      <p id="themeMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+    </form>
+  </div>
+
+  <!-- USERS / ANALYTICS -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Watumiaji</span>
+  <h2 class="section-title">Shughuli za Watumiaji</h2>
+  <div class="quiz-box" style="margin-bottom:30px">
+    <h3 style="margin-bottom:12px;font-size:1rem">Walioingia Mwisho (<span id="userCount">0</span>)</h3>
+    <div class="download-list" id="userActivityList"></div>
+  </div>
+  <div class="quiz-box" style="margin-bottom:30px">
+    <h3 style="margin-bottom:12px;font-size:1rem">Makala Zilizosomwa Zaidi</h3>
+    <div class="download-list" id="articleViewsList"></div>
+  </div>
+
   <!-- CHATBOT FAQ MANAGEMENT -->
   <span class="section-eyebrow" style="margin-top:40px;display:block">Chatbot</span>
   <h2 class="section-title">Ongeza Swali/Jibu kwa Chatbot</h2>
@@ -108,6 +159,11 @@
         <input type="url" id="artImage" placeholder="https://i.imgur.com/xxxxx.jpg">
       </div>
       <div class="field">
+        <label>Link ya PDF (hiari)</label>
+        <input type="url" id="artPdf" placeholder="https://drive.google.com/...">
+        <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia PDF kwenye Google Drive (bure), bonyeza "Share" → "Anyone with link" → nakili link hapa.</p>
+      </div>
+      <div class="field">
         <label>Maudhui ya Makala</label>
         <textarea id="artBody" required rows="8" placeholder="Andika makala yako hapa..." style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.95rem"></textarea>
       </div>
@@ -118,6 +174,33 @@
 
   <h3 style="margin-bottom:12px">Makala Zilizopo (<span id="artCount">0</span>)</h3>
   <div class="download-list" id="articleList" style="margin-bottom:30px"></div>
+
+  <!-- DASHBOARD ITEMS MANAGEMENT -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Dashboard</span>
+  <h2 class="section-title">Ongeza/Punguza Vipengele vya Dashboard</h2>
+  <p class="section-lead">Hizi link/cards zinaonekana kwenye Dashboard ya mtumiaji, chini ya Download Centre.</p>
+
+  <div class="quiz-box" style="margin-bottom:30px">
+    <form id="dashItemForm" onsubmit="return handleAddDashItem(event)">
+      <div class="field">
+        <label>Emoji/Icon</label>
+        <input type="text" id="dashIcon" placeholder="🔗" value="🔗">
+      </div>
+      <div class="field">
+        <label>Jina la Kipengele</label>
+        <input type="text" id="dashLabel" required placeholder="Mfano: Kalenda ya Matukio">
+      </div>
+      <div class="field">
+        <label>Link (URL/faili)</label>
+        <input type="text" id="dashUrl" required placeholder="Mfano: makala.html">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Ongeza kwenye Dashboard</button>
+      <p id="dashItemMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+    </form>
+  </div>
+
+  <h3 style="margin-bottom:12px">Vipengele Vilivyopo (<span id="dashItemCount">0</span>)</h3>
+  <div class="download-list" id="dashItemList" style="margin-bottom:30px"></div>
 
   <!-- NAVIGATION MENU MANAGEMENT -->
   <span class="section-eyebrow" style="margin-top:40px;display:block">Menu</span>
@@ -258,7 +341,98 @@ requireAdmin(function(admin) {
   loadNavItemsList();
   loadArticlesList();
   loadFAQList();
+  loadLogoPreview();
+  loadThemePreview();
+  loadUserActivity();
+  loadArticleViews();
+  loadDashItemsList();
 });
+
+async function handleSetLogo(e) {
+  e.preventDefault();
+  const url = document.getElementById('logoUrl').value.trim();
+  await db.collection('siteSettings').doc('branding').set({ logoUrl: url }, { merge: true });
+  const msg = document.getElementById('logoMsg');
+  msg.textContent = 'Logo imewekwa!';
+  msg.style.display = 'block';
+  return false;
+}
+
+async function removeLogo() {
+  await db.collection('siteSettings').doc('branding').set({ logoUrl: '' }, { merge: true });
+  document.getElementById('logoUrl').value = '';
+  const msg = document.getElementById('logoMsg');
+  msg.textContent = 'Logo imefutwa, imerudi kuwa maandishi.';
+  msg.style.display = 'block';
+}
+
+async function loadLogoPreview() {
+  const doc = await db.collection('siteSettings').doc('branding').get();
+  if (doc.exists && doc.data().logoUrl) {
+    document.getElementById('logoUrl').value = doc.data().logoUrl;
+  }
+}
+
+async function handleSetTheme(e) {
+  e.preventDefault();
+  const c1 = document.getElementById('heroColor1').value;
+  const c2 = document.getElementById('heroColor2').value;
+  const c3 = document.getElementById('heroColor3').value;
+  await db.collection('siteSettings').doc('theme').set({ heroColor1: c1, heroColor2: c2, heroColor3: c3 });
+  const msg = document.getElementById('themeMsg');
+  msg.textContent = 'Rangi za Hero zimebadilishwa!';
+  msg.style.display = 'block';
+  return false;
+}
+
+async function loadThemePreview() {
+  const doc = await db.collection('siteSettings').doc('theme').get();
+  if (doc.exists) {
+    const d = doc.data();
+    if (d.heroColor1) document.getElementById('heroColor1').value = d.heroColor1;
+    if (d.heroColor2) document.getElementById('heroColor2').value = d.heroColor2;
+    if (d.heroColor3) document.getElementById('heroColor3').value = d.heroColor3;
+  }
+}
+
+async function loadUserActivity() {
+  const list = document.getElementById('userActivityList');
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  const snap = await db.collection('users').orderBy('lastLogin', 'desc').limit(20).get().catch(() => null);
+  if (!snap || snap.empty) {
+    list.innerHTML = '<p style="color:#888">Hakuna taarifa za login bado.</p>';
+    document.getElementById('userCount').textContent = 0;
+    return;
+  }
+  document.getElementById('userCount').textContent = snap.size;
+  list.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const lastLogin = d.lastLogin ? new Date(d.lastLogin).toLocaleString('sw-TZ') : 'Hajawahi';
+    const item = document.createElement('div');
+    item.className = 'download-item';
+    item.innerHTML = `<span>${d.name} (${d.email})</span><span style="font-size:0.78rem;color:#888">${lastLogin}</span>`;
+    list.appendChild(item);
+  });
+}
+
+async function loadArticleViews() {
+  const list = document.getElementById('articleViewsList');
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  const snap = await db.collection('articles').orderBy('views', 'desc').limit(10).get().catch(() => null);
+  if (!snap || snap.empty) {
+    list.innerHTML = '<p style="color:#888">Hakuna makala bado.</p>';
+    return;
+  }
+  list.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const item = document.createElement('div');
+    item.className = 'download-item';
+    item.innerHTML = `<span>${d.title}</span><span style="font-size:0.78rem;color:#888">${d.views || 0} mara</span>`;
+    list.appendChild(item);
+  });
+}
 
 async function handleAddFAQ(e) {
   e.preventDefault();
@@ -310,10 +484,11 @@ async function handleAddArticle(e) {
   e.preventDefault();
   const title = document.getElementById('artTitle').value.trim();
   const image = document.getElementById('artImage').value.trim();
+  const pdf = document.getElementById('artPdf').value.trim();
   const body = document.getElementById('artBody').value.trim();
 
   await db.collection('articles').add({
-    title, image, body, createdAt: new Date().toISOString()
+    title, image, pdf, body, views: 0, createdAt: new Date().toISOString()
   });
 
   document.getElementById('articleForm').reset();
@@ -350,6 +525,54 @@ async function deleteArticle(id) {
   if (!confirm('Una uhakika unataka kufuta makala hii?')) return;
   await db.collection('articles').doc(id).delete();
   loadArticlesList();
+}
+
+async function handleAddDashItem(e) {
+  e.preventDefault();
+  const icon = document.getElementById('dashIcon').value.trim() || '🔗';
+  const label = document.getElementById('dashLabel').value.trim();
+  const url = document.getElementById('dashUrl').value.trim();
+
+  const countSnap = await db.collection('dashboardItems').get();
+  await db.collection('dashboardItems').add({
+    icon, label, url, order: countSnap.size, createdAt: new Date().toISOString()
+  });
+
+  document.getElementById('dashItemForm').reset();
+  document.getElementById('dashIcon').value = '🔗';
+  const msg = document.getElementById('dashItemMsg');
+  msg.textContent = 'Kimeongezwa kwenye Dashboard!';
+  msg.style.display = 'block';
+  loadDashItemsList();
+  return false;
+}
+
+async function loadDashItemsList() {
+  const list = document.getElementById('dashItemList');
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  const snap = await db.collection('dashboardItems').orderBy('order', 'asc').get();
+  document.getElementById('dashItemCount').textContent = snap.size;
+  if (snap.empty) {
+    list.innerHTML = '<p style="color:#888">Hakuna vipengele vya ziada bado.</p>';
+    return;
+  }
+  list.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const item = document.createElement('div');
+    item.className = 'download-item';
+    item.innerHTML = `
+      <span>${d.icon} ${d.label} → ${d.url}</span>
+      <button class="dl-btn" style="background:#c0392b" onclick="deleteDashItem('${doc.id}')">Futa</button>
+    `;
+    list.appendChild(item);
+  });
+}
+
+async function deleteDashItem(id) {
+  if (!confirm('Una uhakika unataka kufuta kipengele hiki?')) return;
+  await db.collection('dashboardItems').doc(id).delete();
+  loadDashItemsList();
 }
 
 async function handleAddNavItem(e) {
@@ -677,3 +900,4 @@ async function deleteImage(docId) {
 </script>
 </body>
 </html>
+
