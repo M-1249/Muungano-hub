@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz | Union Hub Tanzania</title>
+<title>Picha | Union Hub Tanzania</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -26,40 +26,20 @@
 </nav>
 
 <header class="hero" style="padding:50px 20px 60px">
-  <h1>Jipime Maarifa Yako</h1>
-  <p>Maswali 10 kuhusu historia na faida za Muungano wa Tanzania.</p>
+  <h1>Picha za Muungano</h1>
+  <p>Picha zinazohusu historia na maisha ya Muungano wa Tanzania.</p>
 </header>
 
 <section class="section">
-  <div class="quiz-box" id="quizContainer">
-    <!-- Quiz inajazwa na app.js -->
+  <div class="field" style="max-width:420px;margin-bottom:20px">
+    <input type="text" id="photoSearch" placeholder="🔍 Tafuta picha..." oninput="filterPhotos()" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:30px;font-size:0.9rem">
+  </div>
+  <div class="card-grid" id="photoGallery">
+    <p style="color:#888">Inapakia picha...</p>
   </div>
 </section>
 
 <footer>
-  <div class="footer-grid">
-    <div>
-      <h4>Union Hub TZ</h4>
-      <a href="history.html" data-i18n="nav_history">Historia</a>
-      <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
-    <a href="makala.html">Makala</a>
-    <a href="video.html">Video</a>
-    <a href="picha.html">Picha</a>
-      <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
-    </div>
-    <div>
-      <h4>Akaunti</h4>
-      <a href="login.html">Login</a>
-      <a href="register.html">Jisajili</a>
-      <a href="dashboard.html">Dashboard</a>
-    </div>
-    <div>
-      <h4>Mawasiliano</h4>
-      <a href="#">Facebook</a>
-      <a href="#">Instagram</a>
-      <a href="#">Wasiliana Nasi</a>
-    </div>
-  </div>
   <div class="footer-bottom">
     &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
     <span style="font-size:0.75rem;color:#777">Tovuti hii imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
@@ -74,15 +54,42 @@
 <script src="js/i18n.js"></script>
 <script src="js/chatbot.js"></script>
 <script>
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    const doc = await db.collection('users').doc(user.uid).get();
-    uh_currentUserData = { uid: user.uid, ...doc.data() };
+let ALL_PHOTOS = [];
+
+async function loadPhotos() {
+  const gallery = document.getElementById('photoGallery');
+  try {
+    const snap = await db.collection('images').orderBy('createdAt', 'desc').get();
+    if (snap.empty) {
+      gallery.innerHTML = '<p style="color:#888">Hakuna picha bado.</p>';
+      return;
+    }
+    ALL_PHOTOS = snap.docs.map(doc => doc.data());
+    renderPhotos(ALL_PHOTOS);
+  } catch (err) {
+    gallery.innerHTML = '<p style="color:#888">Hakuna picha bado.</p>';
   }
-  loadQuiz();
-});
-recordPageView('quiz');
+}
+
+function renderPhotos(list) {
+  const gallery = document.getElementById('photoGallery');
+  if (!list.length) { gallery.innerHTML = '<p style="color:#888">Hakuna picha iliyolingana.</p>'; return; }
+  gallery.innerHTML = list.map(d => `
+    <div class="card">
+      <img src="${d.url}" style="width:100%;border-radius:8px;margin-bottom:10px;height:160px;object-fit:cover">
+      <h3 style="font-size:0.95rem">${d.label}</h3>
+    </div>
+  `).join('');
+}
+
+function filterPhotos() {
+  const q = document.getElementById('photoSearch').value.trim().toLowerCase();
+  if (!q) { renderPhotos(ALL_PHOTOS); return; }
+  renderPhotos(ALL_PHOTOS.filter(d => (d.label || '').toLowerCase().includes(q)));
+}
+
+loadPhotos();
+recordPageView('picha');
 </script>
 </body>
 </html>
-

@@ -24,7 +24,56 @@
   </div>
 
   <!-- ADD QUESTION -->
-  <span class="section-eyebrow">Maswali ya Quiz</span>
+  <!-- HISTORY & BENEFITS CONTENT MANAGEMENT -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Historia na Faida</span>
+  <h2 class="section-title">Ongeza Kipengele kwenye Historia/Faida</h2>
+
+  <div class="quiz-box" style="margin-bottom:30px">
+    <form id="contentBlockForm" onsubmit="return handleAddContentBlock(event)">
+      <div class="field">
+        <label>Ukurasa</label>
+        <select id="cbPage" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+          <option value="history">Historia</option>
+          <option value="benefits">Faida</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Emoji/Icon</label>
+        <input type="text" id="cbIcon" placeholder="📜" value="📜">
+      </div>
+      <div class="field">
+        <label>Kichwa</label>
+        <input type="text" id="cbTitle" required placeholder="Mfano: Tukio Maalum">
+      </div>
+      <div class="field">
+        <label>Maelezo</label>
+        <textarea id="cbText" required rows="3" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Ongeza Kipengele</button>
+      <p id="cbMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+    </form>
+  </div>
+
+  <h3 style="margin-bottom:12px">Vipengele Vilivyopo (<span id="cbCount">0</span>)</h3>
+  <div class="download-list" id="cbList" style="margin-bottom:30px"></div>
+
+  <!-- QUIZ SETTINGS -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Mipangilio ya Quiz</span>
+  <h2 class="section-title">Kigezo cha Kupata Cheti</h2>
+  <div class="quiz-box" style="margin-bottom:30px">
+    <form id="certSettingsForm" onsubmit="return handleSetCertThreshold(event)">
+      <div class="field">
+        <label>Asilimia ya Chini Kupata Cheti (%)</label>
+        <input type="number" id="certThreshold" min="0" max="100" value="60" required>
+        <p style="font-size:0.78rem;color:#888;margin-top:5px">Mtu anapaswa kupata asilimia hii au zaidi ya maswali ili apate "Pakua Cheti".</p>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Hifadhi Kigezo</button>
+      <p id="certSettingsMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+    </form>
+  </div>
+
+  <!-- MASWALI YA QUIZ -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Maswali ya Quiz</span>
   <h2 class="section-title">Ongeza Swali Jipya</h2>
 
   <div class="quiz-box" style="margin-bottom:30px">
@@ -115,6 +164,11 @@
   <div class="quiz-box" style="margin-bottom:30px">
     <h3 style="margin-bottom:12px;font-size:1rem">Makala Zilizosomwa Zaidi</h3>
     <div class="download-list" id="articleViewsList"></div>
+  </div>
+
+  <div class="quiz-box" style="margin-bottom:30px">
+    <h3 style="margin-bottom:12px;font-size:1rem">Idadi ya Watu Walioona Kila Ukurasa</h3>
+    <div class="download-list" id="pageViewsList"></div>
   </div>
 
   <!-- CHATBOT FAQ MANAGEMENT -->
@@ -252,20 +306,26 @@
   <div class="download-list" id="dlList" style="margin-bottom:30px"></div>
 
   <!-- VIDEO MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Video ya Elimu</span>
-  <h2 class="section-title">Badilisha Video ya Mukurasa wa Mwanzo</h2>
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Video za Elimu</span>
+  <h2 class="section-title">Ongeza Video Mpya</h2>
 
   <div class="quiz-box" style="margin-bottom:30px">
     <form id="videoForm" onsubmit="return handleSetVideo(event)">
       <div class="field">
-        <label>Link ya YouTube (mfano: https://www.youtube.com/watch?v=XXXXXXX)</label>
+        <label>Jina la Video</label>
+        <input type="text" id="videoTitle" required placeholder="Mfano: Historia ya Muungano - Sehemu ya 1">
+      </div>
+      <div class="field">
+        <label>Link ya YouTube</label>
         <input type="text" id="videoUrl" required placeholder="https://www.youtube.com/watch?v=...">
       </div>
-      <button type="submit" class="btn btn-primary btn-block">Weka Video</button>
+      <button type="submit" class="btn btn-primary btn-block">Ongeza Video</button>
       <p id="videoMsg" style="margin-top:10px;color:var(--green);display:none"></p>
     </form>
-    <div id="currentVideoPreview" style="margin-top:18px"></div>
   </div>
+
+  <h3 style="margin-bottom:12px">Video Zilizopo (<span id="videoCount">0</span>)</h3>
+  <div class="download-list" id="videoList" style="margin-bottom:30px"></div>
 
   <!-- SITE IMAGES (Front Page) -->
   <span class="section-eyebrow" style="margin-top:40px;display:block">Mukurasa wa Mbele</span>
@@ -333,6 +393,8 @@
 
 <script>
 requireAdmin(function(admin) {
+  loadCertThreshold();
+  loadContentBlocksList();
   loadQuestionsList();
   loadImageGallery();
   loadSiteImagesPreview();
@@ -346,7 +408,34 @@ requireAdmin(function(admin) {
   loadUserActivity();
   loadArticleViews();
   loadDashItemsList();
+  loadPageViews();
 });
+
+async function loadPageViews() {
+  const list = document.getElementById('pageViewsList');
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  const labels = {
+    home: 'Home', history: 'Historia', benefits: 'Faida',
+    quiz: 'Quiz', makala: 'Makala', video: 'Video', picha: 'Picha'
+  };
+  try {
+    const snap = await db.collection('pageViews').get();
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna data bado.</p>';
+      return;
+    }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `<span>${labels[doc.id] || doc.id}</span><span style="font-weight:600">${d.count || 0} mara</span>`;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<p style="color:#888">Hakuna data bado.</p>';
+  }
+}
 
 async function handleSetLogo(e) {
   e.preventDefault();
@@ -701,6 +790,7 @@ function extractYouTubeId(url) {
 
 async function handleSetVideo(e) {
   e.preventDefault();
+  const title = document.getElementById('videoTitle').value.trim();
   const raw = document.getElementById('videoUrl').value.trim();
   const videoId = extractYouTubeId(raw);
   if (!videoId) {
@@ -708,28 +798,42 @@ async function handleSetVideo(e) {
     return false;
   }
   const embedUrl = 'https://www.youtube.com/embed/' + videoId;
-  await db.collection('siteImages').doc('edu_video').set({
-    embedUrl, rawUrl: raw, updatedAt: new Date().toISOString()
+  await db.collection('videos').add({
+    title, embedUrl, rawUrl: raw, createdAt: new Date().toISOString()
   });
   document.getElementById('videoForm').reset();
   const msg = document.getElementById('videoMsg');
-  msg.textContent = 'Video imewekwa kikamilifu!';
+  msg.textContent = 'Video imeongezwa kikamilifu!';
   msg.style.display = 'block';
   loadCurrentVideo();
   return false;
 }
 
 async function loadCurrentVideo() {
-  const preview = document.getElementById('currentVideoPreview');
-  const doc = await db.collection('siteImages').doc('edu_video').get();
-  if (doc.exists) {
-    preview.innerHTML = `
-      <p style="font-size:0.85rem;color:#666;margin-bottom:8px">Video ya sasa:</p>
-      <div class="video-wrap"><iframe src="${doc.data().embedUrl}" allowfullscreen></iframe></div>
-    `;
-  } else {
-    preview.innerHTML = '<p style="color:#888;font-size:0.85rem">Hakuna video iliyowekwa bado.</p>';
+  const list = document.getElementById('videoList');
+  const snap = await db.collection('videos').orderBy('createdAt', 'desc').get();
+  document.getElementById('videoCount').textContent = snap.size;
+  if (snap.empty) {
+    list.innerHTML = '<p style="color:#888">Hakuna video bado.</p>';
+    return;
   }
+  list.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const item = document.createElement('div');
+    item.className = 'download-item';
+    item.innerHTML = `
+      <span>🎬 ${d.title}</span>
+      <button class="dl-btn" style="background:#c0392b" onclick="deleteVideo('${doc.id}')">Futa</button>
+    `;
+    list.appendChild(item);
+  });
+}
+
+async function deleteVideo(id) {
+  if (!confirm('Una uhakika unataka kufuta video hii?')) return;
+  await db.collection('videos').doc(id).delete();
+  loadCurrentVideo();
 }
 
 async function handleSiteImageUpload(e) {
@@ -791,6 +895,72 @@ async function loadSiteImagesPreview() {
       `;
     }
     preview.appendChild(card);
+  }
+}
+
+async function handleAddContentBlock(e) {
+  e.preventDefault();
+  const page = document.getElementById('cbPage').value;
+  const icon = document.getElementById('cbIcon').value.trim() || '📜';
+  const title = document.getElementById('cbTitle').value.trim();
+  const text = document.getElementById('cbText').value.trim();
+
+  const countSnap = await db.collection('contentBlocks').where('page', '==', page).get();
+  await db.collection('contentBlocks').add({
+    page, icon, title, text, order: countSnap.size, createdAt: new Date().toISOString()
+  });
+
+  document.getElementById('contentBlockForm').reset();
+  document.getElementById('cbIcon').value = '📜';
+  const msg = document.getElementById('cbMsg');
+  msg.textContent = 'Kipengele kimeongezwa!';
+  msg.style.display = 'block';
+  loadContentBlocksList();
+  return false;
+}
+
+async function loadContentBlocksList() {
+  const list = document.getElementById('cbList');
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  const snap = await db.collection('contentBlocks').get();
+  document.getElementById('cbCount').textContent = snap.size;
+  if (snap.empty) {
+    list.innerHTML = '<p style="color:#888">Hakuna vipengele vya ziada bado.</p>';
+    return;
+  }
+  list.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const item = document.createElement('div');
+    item.className = 'download-item';
+    item.innerHTML = `
+      <span>[${d.page === 'history' ? 'Historia' : 'Faida'}] ${d.icon} ${d.title}</span>
+      <button class="dl-btn" style="background:#c0392b" onclick="deleteContentBlock('${doc.id}')">Futa</button>
+    `;
+    list.appendChild(item);
+  });
+}
+
+async function deleteContentBlock(id) {
+  if (!confirm('Una uhakika unataka kufuta kipengele hiki?')) return;
+  await db.collection('contentBlocks').doc(id).delete();
+  loadContentBlocksList();
+}
+
+async function handleSetCertThreshold(e) {
+  e.preventDefault();
+  const threshold = parseInt(document.getElementById('certThreshold').value);
+  await db.collection('siteSettings').doc('quizSettings').set({ certThreshold: threshold });
+  const msg = document.getElementById('certSettingsMsg');
+  msg.textContent = 'Kigezo kimehifadhiwa!';
+  msg.style.display = 'block';
+  return false;
+}
+
+async function loadCertThreshold() {
+  const doc = await db.collection('siteSettings').doc('quizSettings').get();
+  if (doc.exists && doc.data().certThreshold !== undefined) {
+    document.getElementById('certThreshold').value = doc.data().certThreshold;
   }
 }
 
@@ -900,4 +1070,5 @@ async function deleteImage(docId) {
 </script>
 </body>
 </html>
+
 

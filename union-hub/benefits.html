@@ -16,6 +16,8 @@
     <a href="history.html" data-i18n="nav_history">Historia</a>
     <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
     <a href="makala.html">Makala</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
     <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
     <a href="dashboard.html" data-i18n="nav_downloads">Downloads</a>
     <a href="login.html" class="nav-cta" data-i18n="nav_login">Login</a>
@@ -65,6 +67,17 @@
 </section>
 
 <section class="section">
+  <span class="section-eyebrow">Zaidi</span>
+  <h2 class="section-title">Faida Nyingine</h2>
+  <div class="field" style="max-width:420px;margin-bottom:20px">
+    <input type="text" id="benefitsSearch" placeholder="🔍 Tafuta..." oninput="filterBenefitsBlocks()" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:30px;font-size:0.9rem">
+  </div>
+  <div class="card-grid" id="benefitsExtraBlocks">
+    <p style="color:#888">Inapakia...</p>
+  </div>
+</section>
+
+<section class="section">
   <span class="section-eyebrow">Jipime</span>
   <h2 class="section-title">Una ufahamu kiasi gani?</h2>
   <p class="section-lead">Pima maarifa yako kwa Quiz fupi ya maswali 10.</p>
@@ -78,6 +91,8 @@
       <a href="history.html" data-i18n="nav_history">Historia</a>
       <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
     <a href="makala.html">Makala</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
       <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
     </div>
     <div>
@@ -107,6 +122,37 @@
 <script src="js/i18n.js"></script>
 <script src="js/chatbot.js"></script>
 <script>
+let BENEFITS_BLOCKS = [];
+async function loadBenefitsBlocks() {
+  const container = document.getElementById('benefitsExtraBlocks');
+  try {
+    const snap = await db.collection('contentBlocks').where('page', '==', 'benefits').orderBy('order', 'asc').get();
+    if (snap.empty) {
+      container.innerHTML = '<p style="color:#888">Hakuna faida za ziada bado.</p>';
+      return;
+    }
+    BENEFITS_BLOCKS = snap.docs.map(doc => doc.data());
+    renderBenefitsBlocks(BENEFITS_BLOCKS);
+  } catch (err) {
+    container.innerHTML = '<p style="color:#888">Hakuna faida za ziada bado.</p>';
+  }
+}
+function renderBenefitsBlocks(list) {
+  const container = document.getElementById('benefitsExtraBlocks');
+  if (!list.length) { container.innerHTML = '<p style="color:#888">Hakuna kilicholingana.</p>'; return; }
+  container.innerHTML = list.map(d => `
+    <div class="card"><span class="icon">${d.icon}</span><h3>${d.title}</h3><p>${d.text}</p></div>
+  `).join('');
+}
+function filterBenefitsBlocks() {
+  const q = document.getElementById('benefitsSearch').value.trim().toLowerCase();
+  if (!q) { renderBenefitsBlocks(BENEFITS_BLOCKS); return; }
+  renderBenefitsBlocks(BENEFITS_BLOCKS.filter(d => d.title.toLowerCase().includes(q) || d.text.toLowerCase().includes(q)));
+}
+loadBenefitsBlocks();
+recordPageView('benefits');
+</script>
+<script>
 (async function() {
   try {
     const doc = await db.collection('siteImages').doc('benefits_img').get();
@@ -119,3 +165,4 @@
 </script>
 </body>
 </html>
+

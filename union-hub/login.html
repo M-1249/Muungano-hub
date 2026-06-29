@@ -16,6 +16,8 @@
     <a href="history.html" data-i18n="nav_history">Historia</a>
     <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
     <a href="makala.html">Makala</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
     <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
     <a href="dashboard.html" data-i18n="nav_downloads">Downloads</a>
     <a href="login.html" class="nav-cta" data-i18n="nav_login">Login</a>
@@ -37,9 +39,17 @@
         <label data-i18n="field_password">Password</label>
         <input type="password" id="password" required placeholder="••••••••">
         <div class="form-error" id="loginError"></div>
+        <p style="text-align:right;margin-top:6px"><a href="#" onclick="return showForgotPassword()" style="font-size:0.82rem;color:var(--blue)">Umesahau password?</a></p>
       </div>
       <button type="submit" class="btn btn-primary btn-block" data-i18n="btn_signin">Ingia</button>
     </form>
+
+    <div id="forgotPasswordBox" style="display:none;margin-top:18px;border-top:1px solid #eee;padding-top:16px">
+      <p style="font-size:0.85rem;color:#555;margin-bottom:10px">Andika barua pepe yako, tutakutumia link ya kubadilisha password.</p>
+      <input type="email" id="forgotEmail" placeholder="wewe@mfano.com" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;margin-bottom:10px">
+      <button class="btn btn-primary btn-block" onclick="sendPasswordReset()">Tuma Link ya Kubadilisha Password</button>
+      <p id="forgotMsg" style="margin-top:10px;font-size:0.85rem;display:none"></p>
+    </div>
 
     <p class="form-foot"><span data-i18n="no_account">Hauna akaunti?</span> <a href="register.html">Jisajili hapa</a></p>
   </div>
@@ -60,6 +70,31 @@
 <script src="js/i18n.js"></script>
 <script src="js/chatbot.js"></script>
 <script>
+function showForgotPassword() {
+  document.getElementById('forgotPasswordBox').style.display = 'block';
+  return false;
+}
+
+function sendPasswordReset() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const msg = document.getElementById('forgotMsg');
+  if (!email) {
+    msg.textContent = 'Tafadhali jaza barua pepe yako.';
+    msg.style.color = '#c0392b';
+    msg.style.display = 'block';
+    return;
+  }
+  auth.sendPasswordResetEmail(email).then(() => {
+    msg.textContent = 'Tumetuma link kwenye barua pepe yako. Angalia inbox (au spam folder).';
+    msg.style.color = 'var(--green)';
+    msg.style.display = 'block';
+  }).catch((err) => {
+    msg.textContent = 'Hitilafu: ' + translateFirebaseError(err);
+    msg.style.color = '#c0392b';
+    msg.style.display = 'block';
+  });
+}
+
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('email').value.trim();
@@ -79,3 +114,4 @@ async function handleLogin(e) {
 </script>
 </body>
 </html>
+

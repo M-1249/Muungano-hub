@@ -2,6 +2,16 @@
    UNION HUB TANZANIA - app.js
    ============================ */
 
+/* ---------- PAGE VIEW TRACKING ---------- */
+async function recordPageView(pageName) {
+  if (typeof db === 'undefined') return;
+  try {
+    await db.collection('pageViews').doc(pageName).set({
+      count: firebase.firestore.FieldValue.increment(1)
+    }, { merge: true });
+  } catch (err) { /* ignore */ }
+}
+
 /* ---------- BRANDING (Logo & Theme) ---------- */
 async function applyBranding() {
   if (typeof db === 'undefined') return;
@@ -408,6 +418,23 @@ function selectAnswer(i) {
   });
   if (i === q.answer) quizState.score++;
   document.getElementById('nextBtn').style.display = 'inline-block';
+  savePartialProgress();
+}
+
+async function savePartialProgress() {
+  const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+  if (!user || !user.uid) return;
+  try {
+    await db.collection('users').doc(user.uid).update({
+      lastQuizAttempt: {
+        score: quizState.score,
+        answered: quizState.index + 1,
+        total: ACTIVE_QUESTIONS.length,
+        completed: false,
+        date: new Date().toISOString()
+      }
+    });
+  } catch (err) { /* ignore */ }
 }
 
 function nextQuestion() {
@@ -422,7 +449,18 @@ function renderResult() {
   if (user) {
     saveQuizScore(quizState.score, total);
   }
-  const passed = quizState.score >= Math.ceil(total * 0.6);
+  db.collection('siteSettings').doc('quizSettings').get().then(doc => {
+    const threshold = (doc.exists && doc.data().certThreshold !== undefined) ? doc.data().certThreshold : 60;
+    const passed = (quizState.score / total) * 100 >= threshold;
+    renderResultBody(total, user, passed);
+  }).catch(() => {
+    const passed = quizState.score >= Math.ceil(total * 0.6);
+    renderResultBody(total, user, passed);
+  });
+}
+
+function renderResultBody(total, user, passed) {
+  const container = document.getElementById('quizContainer');
   const certSection = passed
     ? (user
         ? `<div style="margin-top:10px;border-top:1px solid #eee;padding-top:16px">
@@ -458,3 +496,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if (link.getAttribute('href') === path) link.classList.add('active');
   });
 });
+

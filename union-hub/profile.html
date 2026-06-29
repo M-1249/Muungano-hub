@@ -86,7 +86,16 @@ requireLogin(function(user) {
       </div>
     `).join('');
   }
+
+  if (user.lastQuizAttempt && !user.lastQuizAttempt.completed) {
+    const la = user.lastQuizAttempt;
+    const note = document.createElement('div');
+    note.style.cssText = 'background:#fff7e6;border:1px solid #f2c14e;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:0.82rem;color:#7a5d00';
+    note.textContent = `Una jaribio lisilokamilika: swali ${la.answered}/${la.total}, alama ${la.score} hadi sasa.`;
+    list.parentElement.appendChild(note);
+  }
 });
 </script>
 </body>
 </html>
+

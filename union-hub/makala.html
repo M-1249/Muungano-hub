@@ -16,6 +16,8 @@
     <a href="history.html" data-i18n="nav_history">Historia</a>
     <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
     <a href="makala.html">Makala</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
     <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
     <a href="dashboard.html" data-i18n="nav_downloads">Downloads</a>
     <a href="login.html" class="nav-cta" data-i18n="nav_login">Login</a>
@@ -29,6 +31,9 @@
 </header>
 
 <section class="section">
+  <div class="field" style="max-width:420px;margin:0 auto 24px">
+    <input type="text" id="articleSearch" placeholder="🔍 Tafuta makala..." oninput="filterArticles()" style="width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:30px;font-size:0.95rem">
+  </div>
   <div id="articlesContainer" style="display:flex;flex-direction:column;gap:20px">
     <p style="color:#888;text-align:center">Inapakia makala...</p>
   </div>
@@ -69,6 +74,15 @@
 <script src="js/i18n.js"></script>
 <script src="js/chatbot.js"></script>
 <script>
+let ALL_ARTICLES = [];
+
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    const doc = await db.collection('users').doc(user.uid).get();
+    uh_currentUserData = { uid: user.uid, ...doc.data() };
+  }
+});
+
 async function loadArticles() {
   const container = document.getElementById('articlesContainer');
   try {
@@ -77,26 +91,98 @@ async function loadArticles() {
       container.innerHTML = '<p style="color:#888;text-align:center">Hakuna makala bado. Rudi tena baadaye.</p>';
       return;
     }
-    container.innerHTML = '';
-    snap.forEach(doc => {
-      const d = doc.data();
-      const date = new Date(d.createdAt).toLocaleDateString('sw-TZ', { year: 'numeric', month: 'long', day: 'numeric' });
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.style.borderTopColor = 'var(--blue)';
-      card.innerHTML = `
-        ${d.image ? `<img src="${d.image}" style="width:100%;border-radius:8px;margin-bottom:12px;max-height:220px;object-fit:cover">` : ''}
-        <p style="font-size:0.78rem;color:#888;margin-bottom:6px">${date}</p>
-        <h3 style="font-size:1.15rem;margin-bottom:10px">${d.title}</h3>
-        <p style="white-space:pre-line;color:#444;font-size:0.92rem;line-height:1.7">${d.body}</p>
-      `;
-      container.appendChild(card);
-    });
+    ALL_ARTICLES = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderArticles(ALL_ARTICLES);
   } catch (err) {
     container.innerHTML = '<p style="color:#888;text-align:center">Hakuna makala bado.</p>';
   }
 }
+
+function renderArticles(list) {
+  const container = document.getElementById('articlesContainer');
+  if (!list.length) {
+    container.innerHTML = '<p style="color:#888;text-align:center">Hakuna makala iliyolingana na utafutaji wako.</p>';
+    return;
+  }
+  container.innerHTML = '';
+  list.forEach(d => {
+    const date = new Date(d.createdAt).toLocaleDateString('sw-TZ', { year: 'numeric', month: 'long', day: 'numeric' });
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.style.borderTopColor = 'var(--blue)';
+    card.innerHTML = `
+      ${d.image ? `<img src="${d.image}" style="width:100%;border-radius:8px;margin-bottom:12px;max-height:220px;object-fit:cover">` : ''}
+      <p style="font-size:0.78rem;color:#888;margin-bottom:6px">${date}</p>
+      <h3 style="font-size:1.15rem;margin-bottom:10px">${d.title}</h3>
+      <p style="white-space:pre-line;color:#444;font-size:0.92rem;line-height:1.7">${d.body}</p>
+      ${d.pdf ? `<a href="${d.pdf}" target="_blank" class="btn btn-primary" style="margin-top:12px;display:inline-block">📄 Pakua PDF</a>` : ''}
+      <div style="margin-top:18px;border-top:1px solid #eee;padding-top:14px">
+        <div id="comments-${d.id}" style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px"></div>
+        <form onsubmit="return submitComment(event,'${d.id}')" style="display:flex;gap:8px">
+          <input type="text" id="commentInput-${d.id}" placeholder="Andika maoni yako..." style="flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:20px;font-size:0.85rem">
+          <button type="submit" class="btn btn-primary" style="padding:9px 16px;font-size:0.85rem">Tuma</button>
+        </form>
+      </div>
+    `;
+    container.appendChild(card);
+    incrementArticleView(d.id);
+    loadComments(d.id);
+  });
+}
+
+function filterArticles() {
+  const q = document.getElementById('articleSearch').value.trim().toLowerCase();
+  if (!q) { renderArticles(ALL_ARTICLES); return; }
+  const filtered = ALL_ARTICLES.filter(a =>
+    (a.title || '').toLowerCase().includes(q) || (a.body || '').toLowerCase().includes(q)
+  );
+  renderArticles(filtered);
+}
+
+async function incrementArticleView(articleId) {
+  try {
+    await db.collection('articles').doc(articleId).update({
+      views: firebase.firestore.FieldValue.increment(1)
+    });
+  } catch (err) {}
+}
+
+async function loadComments(articleId) {
+  const box = document.getElementById('comments-' + articleId);
+  if (!box) return;
+  try {
+    const snap = await db.collection('comments').where('articleId', '==', articleId).orderBy('createdAt', 'asc').get();
+    if (snap.empty) { box.innerHTML = ''; return; }
+    box.innerHTML = snap.docs.map(doc => {
+      const c = doc.data();
+      return `<div style="background:var(--cream);padding:8px 12px;border-radius:8px;font-size:0.85rem"><strong>${c.userName}:</strong> ${c.text}</div>`;
+    }).join('');
+  } catch (err) {}
+}
+
+async function submitComment(e, articleId) {
+  e.preventDefault();
+  const input = document.getElementById('commentInput-' + articleId);
+  const text = input.value.trim();
+  if (!text) return false;
+
+  const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+  if (!user) {
+    alert('Lazima uingie (Login) kabla ya kutoa maoni.');
+    return false;
+  }
+
+  await db.collection('comments').add({
+    articleId, userName: user.name, text, createdAt: new Date().toISOString()
+  });
+  input.value = '';
+  loadComments(articleId);
+  return false;
+}
+
 loadArticles();
+recordPageView('makala');
 </script>
 </body>
 </html>
+

@@ -16,6 +16,8 @@
     <a href="history.html" data-i18n="nav_history">Historia</a>
     <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
     <a href="makala.html">Makala</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
     <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
     <a href="dashboard.html" data-i18n="nav_downloads">Downloads</a>
     <a href="login.html" class="nav-cta" data-i18n="nav_login">Login</a>
@@ -73,6 +75,17 @@
 </section>
 
 <section class="section">
+  <span class="section-eyebrow">Zaidi</span>
+  <h2 class="section-title">Maelezo Mengine</h2>
+  <div class="field" style="max-width:420px;margin-bottom:20px">
+    <input type="text" id="historySearch" placeholder="🔍 Tafuta..." oninput="filterHistoryBlocks()" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:30px;font-size:0.9rem">
+  </div>
+  <div class="card-grid" id="historyExtraBlocks">
+    <p style="color:#888">Inapakia...</p>
+  </div>
+</section>
+
+<section class="section">
   <span class="section-eyebrow">Jipime</span>
   <h2 class="section-title">Umejifunza Nini?</h2>
   <p class="section-lead">Jaribu maarifa yako kwa Quiz ya maswali 10 kuhusu historia hii.</p>
@@ -86,6 +99,8 @@
       <a href="history.html" data-i18n="nav_history">Historia</a>
       <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
     <a href="makala.html">Makala</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
       <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
     </div>
     <div>
@@ -114,5 +129,37 @@
 <script src="js/app.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/chatbot.js"></script>
+<script>
+let HISTORY_BLOCKS = [];
+async function loadHistoryBlocks() {
+  const container = document.getElementById('historyExtraBlocks');
+  try {
+    const snap = await db.collection('contentBlocks').where('page', '==', 'history').orderBy('order', 'asc').get();
+    if (snap.empty) {
+      container.innerHTML = '<p style="color:#888">Hakuna maelezo ya ziada bado.</p>';
+      return;
+    }
+    HISTORY_BLOCKS = snap.docs.map(doc => doc.data());
+    renderHistoryBlocks(HISTORY_BLOCKS);
+  } catch (err) {
+    container.innerHTML = '<p style="color:#888">Hakuna maelezo ya ziada bado.</p>';
+  }
+}
+function renderHistoryBlocks(list) {
+  const container = document.getElementById('historyExtraBlocks');
+  if (!list.length) { container.innerHTML = '<p style="color:#888">Hakuna kilicholingana.</p>'; return; }
+  container.innerHTML = list.map(d => `
+    <div class="card"><span class="icon">${d.icon}</span><h3>${d.title}</h3><p>${d.text}</p></div>
+  `).join('');
+}
+function filterHistoryBlocks() {
+  const q = document.getElementById('historySearch').value.trim().toLowerCase();
+  if (!q) { renderHistoryBlocks(HISTORY_BLOCKS); return; }
+  renderHistoryBlocks(HISTORY_BLOCKS.filter(d => d.title.toLowerCase().includes(q) || d.text.toLowerCase().includes(q)));
+}
+loadHistoryBlocks();
+recordPageView('history');
+</script>
 </body>
 </html>
+
