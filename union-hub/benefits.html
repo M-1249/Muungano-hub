@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+)<!DOCTYPE html>
 <html lang="sw">
 <head>
 <meta charset="UTF-8">
@@ -126,12 +126,12 @@ let BENEFITS_BLOCKS = [];
 async function loadBenefitsBlocks() {
   const container = document.getElementById('benefitsExtraBlocks');
   try {
-    const snap = await db.collection('contentBlocks').where('page', '==', 'benefits').orderBy('order', 'asc').get();
+    const snap = await db.collection('contentBlocks').where('page', '==', 'benefits').get();
     if (snap.empty) {
       container.innerHTML = '<p style="color:#888">Hakuna faida za ziada bado.</p>';
       return;
     }
-    BENEFITS_BLOCKS = snap.docs.map(doc => doc.data());
+    BENEFITS_BLOCKS = snap.docs.map(doc => doc.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
     renderBenefitsBlocks(BENEFITS_BLOCKS);
   } catch (err) {
     container.innerHTML = '<p style="color:#888">Hakuna faida za ziada bado.</p>';
@@ -165,4 +165,5 @@ recordPageView('benefits');
 </script>
 </body>
 </html>
+
 

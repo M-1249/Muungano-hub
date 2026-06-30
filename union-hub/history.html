@@ -134,12 +134,12 @@ let HISTORY_BLOCKS = [];
 async function loadHistoryBlocks() {
   const container = document.getElementById('historyExtraBlocks');
   try {
-    const snap = await db.collection('contentBlocks').where('page', '==', 'history').orderBy('order', 'asc').get();
+    const snap = await db.collection('contentBlocks').where('page', '==', 'history').get();
     if (snap.empty) {
       container.innerHTML = '<p style="color:#888">Hakuna maelezo ya ziada bado.</p>';
       return;
     }
-    HISTORY_BLOCKS = snap.docs.map(doc => doc.data());
+    HISTORY_BLOCKS = snap.docs.map(doc => doc.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
     renderHistoryBlocks(HISTORY_BLOCKS);
   } catch (err) {
     container.innerHTML = '<p style="color:#888">Hakuna maelezo ya ziada bado.</p>';
@@ -162,4 +162,5 @@ recordPageView('history');
 </script>
 </body>
 </html>
+
 
