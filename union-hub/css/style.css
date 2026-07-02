@@ -586,6 +586,7 @@ footer {
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(13,19,16,0.55);
   z-index: 500;
+  pointer-events: none;
 }
 
 .drawer-panel {
@@ -622,4 +623,5 @@ footer {
   cursor: pointer;
   line-height: 1;
 }
+
 

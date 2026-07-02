@@ -24,6 +24,32 @@
   </div>
 
   <!-- ADD QUESTION -->
+  <!-- MAONI YA WATUMIAJI -->
+  <span class="section-eyebrow" style="margin-top:0;display:block">Maoni</span>
+  <h2 class="section-title">Maoni ya Watumiaji kwenye Makala</h2>
+  <div class="quiz-box" style="margin-bottom:10px">
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="loadAllComments()" style="flex:1">Onyesha Maoni Yote</button>
+      <button class="btn btn-secondary" onclick="exportComments()" style="flex:1;color:var(--blue);border-color:var(--blue)">📥 Pakua CSV</button>
+    </div>
+    <p style="font-size:0.82rem;color:#888">Maoni (<span id="commentsCount">0</span>)</p>
+  </div>
+  <div class="download-list" id="commentsList" style="margin-bottom:30px"></div>
+
+  <!-- DOWNLOAD ACTIVITIES / ANALYTICS -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Utafiti</span>
+  <h2 class="section-title">Pakua Taarifa za Shughuli (Analytics)</h2>
+  <div class="quiz-box" style="margin-bottom:30px">
+    <p style="font-size:0.9rem;color:#444;margin-bottom:14px">Pakua taarifa kamili kuhusu jinsi tovuti inavyotumiwa.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-primary" onclick="exportActivity('pageViews')">📊 Idadi ya Maoni ya Kurasa (CSV)</button>
+      <button class="btn btn-primary" onclick="exportActivity('users')">👥 Taarifa za Watumiaji (CSV)</button>
+      <button class="btn btn-primary" onclick="exportActivity('quizScores')">🧠 Matokeo ya Quiz (CSV)</button>
+      <button class="btn btn-primary" onclick="exportActivity('articles')">📰 Takwimu za Makala (CSV)</button>
+    </div>
+    <p id="exportMsg" style="margin-top:12px;color:var(--green);font-size:0.85rem;display:none"></p>
+  </div>
+
   <!-- HISTORY & BENEFITS CONTENT MANAGEMENT -->
   <span class="section-eyebrow" style="margin-top:40px;display:block">Historia na Faida</span>
   <h2 class="section-title">Ongeza Kipengele kwenye Historia/Faida</h2>
@@ -409,8 +435,113 @@ requireAdmin(function(admin) {
   loadArticleViews();
   loadDashItemsList();
   loadPageViews();
+  loadAllComments();
 });
 
+/* -------- COMMENTS MANAGEMENT -------- */
+async function loadAllComments() {
+  const list = document.getElementById('commentsList');
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  try {
+    const snap = await db.collection('comments').get();
+    document.getElementById('commentsCount').textContent = snap.size;
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna maoni bado.</p>';
+      return;
+    }
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    list.innerHTML = '';
+    docs.forEach(d => {
+      const date = d.createdAt ? new Date(d.createdAt).toLocaleString('sw-TZ') : '';
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.style.cssText = 'flex-direction:column;align-items:flex-start;gap:4px';
+      item.innerHTML = `
+        <div style="display:flex;justify-content:space-between;width:100%">
+          <strong>${d.userName || 'Mgeni'}</strong>
+          <span style="font-size:0.75rem;color:#888">${date}</span>
+        </div>
+        <p style="margin:0;font-size:0.88rem;color:#444">${d.text}</p>
+        <div style="display:flex;justify-content:space-between;width:100%;margin-top:4px">
+          <span style="font-size:0.75rem;color:#888">Makala: ${d.articleId || '—'}</span>
+          <button class="dl-btn" style="background:#c0392b;font-size:0.75rem;padding:4px 10px" onclick="deleteComment('${d.id}')">Futa</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<p style="color:#888">Imeshindwa kupakia maoni.</p>';
+  }
+}
+
+async function deleteComment(id) {
+  if (!confirm('Futa maoni haya?')) return;
+  await db.collection('comments').doc(id).delete();
+  loadAllComments();
+}
+
+function downloadCSV(filename, rows) {
+  const csv = rows.map(r => r.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function exportComments() {
+  const snap = await db.collection('comments').get();
+  if (snap.empty) { alert('Hakuna maoni ya kupakua.'); return; }
+  const rows = [['Jina', 'Maoni', 'Makala ID', 'Tarehe']];
+  snap.forEach(d => {
+    const c = d.data();
+    rows.push([c.userName || '', c.text || '', c.articleId || '', c.createdAt || '']);
+  });
+  downloadCSV('maoni-watumiaji.csv', rows);
+}
+
+async function exportActivity(type) {
+  const msg = document.getElementById('exportMsg');
+  msg.textContent = 'Inapakua...'; msg.style.display = 'block';
+  try {
+    if (type === 'pageViews') {
+      const snap = await db.collection('pageViews').get();
+      const rows = [['Ukurasa', 'Maoni (Views)']];
+      snap.forEach(d => rows.push([d.id, d.data().count || 0]));
+      downloadCSV('idadi-maoni-kurasa.csv', rows);
+    } else if (type === 'users') {
+      const snap = await db.collection('users').get();
+      const rows = [['Jina', 'Barua Pepe', 'Aina', 'Tarehe ya Kujiunga', 'Login ya Mwisho']];
+      snap.forEach(d => {
+        const u = d.data();
+        rows.push([u.name || '', u.email || '', u.role || 'member', u.createdAt || '', u.lastLogin || '']);
+      });
+      downloadCSV('watumiaji.csv', rows);
+    } else if (type === 'quizScores') {
+      const snap = await db.collection('users').get();
+      const rows = [['Jina', 'Barua Pepe', 'Tarehe', 'Alama', 'Jumla']];
+      snap.forEach(d => {
+        const u = d.data();
+        (u.scores || []).forEach(s => rows.push([u.name || '', u.email || '', s.date || '', s.score || 0, s.total || 10]));
+      });
+      downloadCSV('matokeo-quiz.csv', rows);
+    } else if (type === 'articles') {
+      const snap = await db.collection('articles').get();
+      const rows = [['Kichwa', 'Maoni ya Makala (Views)', 'Tarehe ya Kuandika']];
+      snap.forEach(d => {
+        const a = d.data();
+        rows.push([a.title || '', a.views || 0, a.createdAt || '']);
+      });
+      downloadCSV('takwimu-makala.csv', rows);
+    }
+    msg.textContent = '✅ Taarifa imepakiwa kikamilifu!';
+  } catch (err) {
+    msg.textContent = 'Hitilafu: ' + err.message; msg.style.color = '#c0392b';
+  }
+}
+
+/* -------- PAGE VIEWS -------- */
 async function loadPageViews() {
   const list = document.getElementById('pageViewsList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
@@ -1070,5 +1201,7 @@ async function deleteImage(docId) {
 </script>
 </body>
 </html>
+
+  
 
 

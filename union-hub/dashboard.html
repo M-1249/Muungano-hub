@@ -12,30 +12,34 @@
   <a href="index.html" class="logo">UNION<span>HUB</span> TZ</a>
   <button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
   <div class="nav-links" id="navLinks">
-    <a href="index.html" data-i18n="nav_home">Home</a>
-    <a href="history.html" data-i18n="nav_history">Historia</a>
-    <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
+    <a href="index.html">Home</a>
+    <a href="history.html">Historia</a>
+    <a href="benefits.html">Faida</a>
     <a href="makala.html">Makala</a>
-    <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
-    <a href="dashboard.html" data-i18n="nav_downloads">Downloads</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
+    <a href="quiz.html">Quiz</a>
     <a href="profile.html">Profile</a>
-    <a href="#" class="nav-cta" onclick="logout()" data-i18n="nav_logout">Logout</a>
+    <a href="#" class="nav-cta" onclick="logout()">Logout</a>
     <button class="lang-btn" id="langToggleBtn" onclick="toggleLang()">EN</button>
   </div>
 </nav>
 
-<div class="drawer-overlay" onclick="window.location.href='index.html'"></div>
-<div class="drawer-panel">
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer-panel" id="drawerPanel">
   <div class="drawer-close">
-    <button onclick="window.location.href='index.html'" aria-label="Funga">&times;</button>
+    <a href="index.html" style="color:#fff;text-decoration:none;font-size:1rem">← Rudi Nyumbani</a>
+    <button onclick="window.location.href='index.html'" style="background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;float:right">&times;</button>
   </div>
 
   <section class="section" style="padding-top:20px">
     <div class="dash-header">
-      <h1 id="welcomeMsg">Karibu</h1>
+      <h1 id="welcomeMsg">Inapakia...</h1>
     </div>
 
-    <div class="stat-grid">
+    <div id="adminBtnArea"></div>
+
+    <div class="stat-grid" style="margin-top:16px">
       <div class="stat-card">
         <div class="num" id="quizCount">0</div>
         <div class="label">Quiz Zilizofanyika</div>
@@ -50,24 +54,19 @@
       </div>
     </div>
 
-    <span class="section-eyebrow">Kituo cha Upakuaji</span>
+    <span class="section-eyebrow" style="margin-top:20px;display:block">Kituo cha Upakuaji</span>
     <h2 class="section-title">Download Centre</h2>
     <div class="download-list" id="downloadCentreList" style="margin-bottom:24px">
-      <p style="color:#888">Inapakia nyaraka...</p>
+      <p style="color:#888">Inapakia...</p>
     </div>
 
     <span class="section-eyebrow">Zaidi</span>
     <h2 class="section-title">Vipengele Vingine</h2>
-    <div class="download-list" id="extraItemsList" style="margin-bottom:24px"></div>
+    <div class="download-list" id="extraItemsList" style="margin-bottom:24px">
+      <p style="color:#888">Inapakia...</p>
+    </div>
   </section>
 </div>
-
-<footer style="display:none">
-  <div class="footer-bottom">
-    &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
-    <span style="font-size:0.75rem;color:#777">Tovuti hii imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
-  </div>
-</footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -77,8 +76,9 @@
 <script src="js/i18n.js"></script>
 <script src="js/chatbot.js"></script>
 <script>
-const user = requireLogin(function(user) {
-  document.getElementById('welcomeMsg').textContent = 'Karibu, ' + user.name;
+requireLogin(function(user) {
+  document.getElementById('welcomeMsg').textContent = 'Karibu, ' + (user.name || '');
+
   const scores = user.scores || [];
   document.getElementById('quizCount').textContent = scores.length;
   if (scores.length) {
@@ -86,34 +86,52 @@ const user = requireLogin(function(user) {
     document.getElementById('bestScore').textContent = best + '/10';
     document.getElementById('lastDate').textContent = scores[scores.length - 1].date;
   }
+
   if (user.role === 'admin') {
-    const adminLink = document.createElement('a');
-    adminLink.href = 'admin.html';
-    adminLink.className = 'btn btn-primary';
-    adminLink.style.marginTop = '10px';
-    adminLink.textContent = '🔐 Fungua Admin Panel';
-    document.querySelector('.dash-header').appendChild(adminLink);
+    document.getElementById('adminBtnArea').innerHTML =
+      '<a href="admin.html" class="btn btn-primary" style="margin-top:10px;display:inline-block">🔐 Fungua Admin Panel</a>';
   }
+
   loadDownloadCentre();
   loadExtraDashboardItems();
 });
 
+async function loadDownloadCentre() {
+  const list = document.getElementById('downloadCentreList');
+  try {
+    const snap = await db.collection('downloads').get();
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
+      return;
+    }
+    const docs = snap.docs.map(d => d.data()).sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+    list.innerHTML = '';
+    docs.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `<span>${d.icon || '📄'} ${d.title}</span><a href="${d.url}" target="_blank" class="dl-btn">Pakua</a>`;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
+  }
+}
+
 async function loadExtraDashboardItems() {
   const list = document.getElementById('extraItemsList');
   try {
-    const snap = await db.collection('dashboardItems').orderBy('order', 'asc').get();
+    const snap = await db.collection('dashboardItems').get();
     if (snap.empty) {
       list.innerHTML = '<p style="color:#888;font-size:0.85rem">Hakuna vipengele vya ziada bado.</p>';
       return;
     }
+    const docs = snap.docs.map(d => d.data()).sort((a,b) => (a.order||0)-(b.order||0));
     list.innerHTML = '';
-    snap.forEach(doc => {
-      const d = doc.data();
+    docs.forEach(d => {
       const item = document.createElement('a');
       item.href = d.url;
       item.className = 'download-item';
-      item.style.textDecoration = 'none';
-      item.style.color = 'inherit';
+      item.style.cssText = 'text-decoration:none;color:inherit';
       item.innerHTML = `<span>${d.icon || '🔗'} ${d.label}</span><span class="dl-btn">Fungua</span>`;
       list.appendChild(item);
     });
@@ -121,31 +139,8 @@ async function loadExtraDashboardItems() {
     list.innerHTML = '<p style="color:#888;font-size:0.85rem">Hakuna vipengele vya ziada bado.</p>';
   }
 }
-
-async function loadDownloadCentre() {
-  const list = document.getElementById('downloadCentreList');
-  try {
-    const snap = await db.collection('downloads').orderBy('createdAt', 'desc').get();
-    if (snap.empty) {
-      list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
-      return;
-    }
-    list.innerHTML = '';
-    snap.forEach(doc => {
-      const d = doc.data();
-      const item = document.createElement('div');
-      item.className = 'download-item';
-      item.innerHTML = `
-        <span>${d.icon || '📄'} ${d.title}</span>
-        <a href="${d.url}" target="_blank" class="dl-btn">Pakua</a>
-      `;
-      list.appendChild(item);
-    });
-  } catch (err) {
-    list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
-  }
-}
 </script>
 </body>
 </html>
+
 

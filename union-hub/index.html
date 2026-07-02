@@ -34,8 +34,15 @@
   </div>
 </header>
 
+<section class="section" style="padding-bottom:10px">
+  <div style="max-width:560px;margin:0 auto;display:flex;gap:10px">
+    <input type="text" id="globalSearch" placeholder="🔍 Tafuta makala, historia, faida..." style="flex:1;padding:13px 18px;border:2px solid var(--green-light);border-radius:30px;font-size:0.95rem;outline:none">
+    <button onclick="runGlobalSearch()" class="btn btn-primary" style="border-radius:30px">Tafuta</button>
+  </div>
+  <div id="globalSearchResults" style="max-width:560px;margin:12px auto 0"></div>
+</section>
+
 <section class="section">
-  <span class="section-eyebrow">Historia</span>
   <h2 class="section-title">Historia ya Muungano</h2>
   <p class="section-lead">
     Tarehe 26 Aprili 1964, Tanganyika na Zanzibar ziliungana kuunda Jamhuri ya Muungano wa Tanzania,
@@ -123,19 +130,55 @@ async function loadSiteImages() {
       document.getElementById('historyImgSlot').innerHTML =
         `<img src="${historyDoc.data().url}" style="border-radius:10px;width:100%;max-height:260px;object-fit:cover">`;
     }
-    const videoSnap = await db.collection('videos').orderBy('createdAt', 'desc').limit(1).get();
+    const videoSnap = await db.collection('videos').limit(5).get();
     const videoWrap = document.getElementById('eduVideoWrap');
     if (!videoSnap.empty) {
-      const v = videoSnap.docs[0].data();
-      videoWrap.innerHTML = `<iframe src="${v.embedUrl}" allowfullscreen></iframe>`;
+      const docs = videoSnap.docs.map(d => d.data()).sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+      videoWrap.innerHTML = `<iframe src="${docs[0].embedUrl}" allowfullscreen></iframe>`;
     } else {
       videoWrap.innerHTML = '<p style="text-align:center;padding:30px;color:#888">Hakuna video bado.</p>';
     }
   } catch (err) { /* silently ignore if not configured yet */ }
 }
+async function runGlobalSearch() {
+  const q = document.getElementById('globalSearch').value.trim().toLowerCase();
+  const resultsBox = document.getElementById('globalSearchResults');
+  if (!q) { resultsBox.innerHTML = ''; return; }
+  resultsBox.innerHTML = '<p style="color:#888">Inatafuta...</p>';
+  let results = [];
+  try {
+    const snap = await db.collection('articles').get();
+    snap.forEach(doc => {
+      const d = doc.data();
+      if ((d.title||'').toLowerCase().includes(q) || (d.body||'').toLowerCase().includes(q)) {
+        results.push({ title: d.title, link: 'makala.html', type: 'Makala' });
+      }
+    });
+    const cbSnap = await db.collection('contentBlocks').get();
+    cbSnap.forEach(doc => {
+      const d = doc.data();
+      if ((d.title||'').toLowerCase().includes(q) || (d.text||'').toLowerCase().includes(q)) {
+        results.push({ title: d.title, link: d.page === 'history' ? 'history.html' : 'benefits.html', type: d.page === 'history' ? 'Historia' : 'Faida' });
+      }
+    });
+  } catch (err) {}
+  if (!results.length) {
+    resultsBox.innerHTML = '<p style="color:#888;font-size:0.9rem">Hakuna kilichopatikana.</p>';
+    return;
+  }
+  resultsBox.innerHTML = results.map(r =>
+    `<a href="${r.link}" style="display:flex;justify-content:space-between;padding:10px 14px;background:#fff;border-radius:8px;margin-bottom:6px;text-decoration:none;color:inherit;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
+      <span>${r.title}</span><span style="font-size:0.75rem;background:var(--green-light);color:#fff;padding:2px 8px;border-radius:10px">${r.type}</span>
+    </a>`
+  ).join('');
+}
+document.getElementById('globalSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') runGlobalSearch(); });
+
 loadSiteImages();
 recordPageView('home');
 </script>
 </body>
 </html>
+
+
 

@@ -54,14 +54,14 @@
 async function loadVideosPage() {
   const container = document.getElementById('videosContainer');
   try {
-    const snap = await db.collection('videos').orderBy('createdAt', 'desc').get();
+    const snap = await db.collection('videos').get();
     if (snap.empty) {
       container.innerHTML = '<p style="color:#888;text-align:center">Hakuna video bado. Rudi tena baadaye.</p>';
       return;
     }
+    const docs = snap.docs.map(d => d.data()).sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
     container.innerHTML = '';
-    snap.forEach(doc => {
-      const d = doc.data();
+    docs.forEach(d => {
       const block = document.createElement('div');
       block.innerHTML = `
         <h3 style="margin-bottom:10px">${d.title}</h3>
@@ -78,3 +78,4 @@ recordPageView('video');
 </script>
 </body>
 </html>
+
