@@ -98,19 +98,24 @@ requireLogin(function(user) {
 
 async function loadDownloadCentre() {
   const list = document.getElementById('downloadCentreList');
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
   try {
-    const snap = await db.collection('downloads').get();
-    if (snap.empty) {
+    /* Real-time listener — itasasishwa moja kwa moja bila refresh */
+    db.collection('downloads').onSnapshot(snap => {
+      if (snap.empty) {
+        list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
+        return;
+      }
+      const docs = snap.docs.map(d => d.data()).sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+      list.innerHTML = '';
+      docs.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'download-item';
+        item.innerHTML = `<span>${d.icon || '📄'} ${d.title}</span><a href="${d.url}" target="_blank" class="dl-btn">Pakua</a>`;
+        list.appendChild(item);
+      });
+    }, err => {
       list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
-      return;
-    }
-    const docs = snap.docs.map(d => d.data()).sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
-    list.innerHTML = '';
-    docs.forEach(d => {
-      const item = document.createElement('div');
-      item.className = 'download-item';
-      item.innerHTML = `<span>${d.icon || '📄'} ${d.title}</span><a href="${d.url}" target="_blank" class="dl-btn">Pakua</a>`;
-      list.appendChild(item);
     });
   } catch (err) {
     list.innerHTML = '<p style="color:#888">Hakuna nyaraka zilizopakiwa bado.</p>';
@@ -142,5 +147,6 @@ async function loadExtraDashboardItems() {
 </script>
 </body>
 </html>
+
 
 

@@ -141,6 +141,64 @@
   <h3 style="margin-bottom:12px">Maswali Yaliyopo (<span id="qCount">0</span>)</h3>
   <div class="download-list" id="questionList"></div>
 
+  <!-- SOCIAL ACCOUNTS -->
+  <span class="section-eyebrow" style="margin-top:0;display:block">Mitandao ya Kijamii</span>
+  <h2 class="section-title">Akaunti za Mitandao (Footer)</h2>
+  <div class="quiz-box" style="margin-bottom:30px">
+    <form id="socialForm" onsubmit="return handleSetSocial(event)">
+      <div class="field"><label>📘 Facebook URL</label><input type="url" id="socialFb" placeholder="https://facebook.com/ukurasa-wako"></div>
+      <div class="field"><label>📸 Instagram URL</label><input type="url" id="socialIg" placeholder="https://instagram.com/akaunti-yako"></div>
+      <div class="field"><label>🐦 Twitter/X URL</label><input type="url" id="socialTw" placeholder="https://twitter.com/akaunti-yako"></div>
+      <div class="field"><label>▶️ YouTube URL</label><input type="url" id="socialYt" placeholder="https://youtube.com/channel/..."></div>
+      <button type="submit" class="btn btn-primary btn-block">Hifadhi Mitandao</button>
+      <p id="socialMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+    </form>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Arifa</span>
+  <h2 class="section-title">Tuma Arifa kwa Watumiaji</h2>
+  <div class="quiz-box" style="margin-bottom:30px">
+    <form id="notifForm" onsubmit="return handleSendNotif(event)">
+      <div class="field"><label>Kichwa cha Arifa</label><input type="text" id="notifTitle" required placeholder="Mfano: Makala Mpya Imeandikwa!"></div>
+      <div class="field"><label>Ujumbe</label><textarea id="notifBody" required rows="2" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea></div>
+      <div class="field"><label>Link (hiari)</label><input type="text" id="notifLink" placeholder="Mfano: makala.html"></div>
+      <button type="submit" class="btn btn-primary btn-block">Tuma Arifa</button>
+      <p id="notifMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+    </form>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eee">
+      <h4 style="margin-bottom:10px;font-size:0.95rem">Arifa Zilizotumwa (<span id="notifCount">0</span>)</h4>
+      <div class="download-list" id="notifList"></div>
+    </div>
+  </div>
+
+  <!-- DATE RANGE REPORTS -->
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Taarifa za Muda</span>
+  <h2 class="section-title">Pakua Taarifa kulingana na Muda</h2>
+  <div class="quiz-box" style="margin-bottom:30px">
+    <div class="field">
+      <label>Chagua Kipindi</label>
+      <select id="reportPeriod" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+        <option value="today">Leo</option>
+        <option value="week">Wiki hii (siku 7)</option>
+        <option value="month">Mwezi huu (siku 30)</option>
+        <option value="year">Mwaka huu (siku 365)</option>
+        <option value="all">Yote</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Aina ya Taarifa</label>
+      <select id="reportType" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+        <option value="users">Watumiaji Waliojiunga</option>
+        <option value="quizScores">Matokeo ya Quiz</option>
+        <option value="comments">Maoni</option>
+        <option value="articles">Makala</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="exportDateRangeReport()">📥 Pakua Taarifa (CSV)</button>
+    <p id="dateReportMsg" style="margin-top:10px;color:var(--green);font-size:0.85rem;display:none"></p>
+  </div>
+
   <!-- BRANDING: LOGO & COLORS -->
   <span class="section-eyebrow" style="margin-top:40px;display:block">Branding</span>
   <h2 class="section-title">Logo na Rangi za Tovuti</h2>
@@ -419,6 +477,8 @@
 
 <script>
 requireAdmin(function(admin) {
+  loadSocialSettings();
+  loadNotifList();
   loadCertThreshold();
   loadContentBlocksList();
   loadQuestionsList();
@@ -437,6 +497,133 @@ requireAdmin(function(admin) {
   loadPageViews();
   loadAllComments();
 });
+
+/* -------- SOCIAL ACCOUNTS -------- */
+async function handleSetSocial(e) {
+  e.preventDefault();
+  const social = {
+    facebook: document.getElementById('socialFb').value.trim(),
+    instagram: document.getElementById('socialIg').value.trim(),
+    twitter: document.getElementById('socialTw').value.trim(),
+    youtube: document.getElementById('socialYt').value.trim(),
+  };
+  await db.collection('siteSettings').doc('social').set(social);
+  const msg = document.getElementById('socialMsg');
+  msg.textContent = 'Mitandao ya kijamii imehifadhiwa!';
+  msg.style.display = 'block';
+  return false;
+}
+
+async function loadSocialSettings() {
+  const doc = await db.collection('siteSettings').doc('social').get();
+  if (!doc.exists) return;
+  const d = doc.data();
+  if (d.facebook) document.getElementById('socialFb').value = d.facebook;
+  if (d.instagram) document.getElementById('socialIg').value = d.instagram;
+  if (d.twitter) document.getElementById('socialTw').value = d.twitter;
+  if (d.youtube) document.getElementById('socialYt').value = d.youtube;
+}
+
+/* -------- NOTIFICATIONS -------- */
+async function handleSendNotif(e) {
+  e.preventDefault();
+  const title = document.getElementById('notifTitle').value.trim();
+  const body = document.getElementById('notifBody').value.trim();
+  const link = document.getElementById('notifLink').value.trim();
+  await db.collection('notifications').add({
+    title, body, link, createdAt: new Date().toISOString(), read: false
+  });
+  document.getElementById('notifForm').reset();
+  const msg = document.getElementById('notifMsg');
+  msg.textContent = 'Arifa imetumwa kikamilifu!';
+  msg.style.display = 'block';
+  loadNotifList();
+  return false;
+}
+
+function loadNotifList() {
+  const list = document.getElementById('notifList');
+  db.collection('notifications').onSnapshot(snap => {
+    document.getElementById('notifCount').textContent = snap.size;
+    if (snap.empty) { list.innerHTML = '<p style="color:#888">Hakuna arifa bado.</p>'; return; }
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+    list.innerHTML = '';
+    docs.slice(0,10).forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <div>
+          <strong style="font-size:0.88rem">${d.title}</strong>
+          <p style="margin:0;font-size:0.8rem;color:#888">${d.body}</p>
+        </div>
+        <button class="dl-btn" style="background:#c0392b;flex-shrink:0" onclick="deleteNotif('${d.id}')">Futa</button>
+      `;
+      list.appendChild(item);
+    });
+  });
+}
+
+async function deleteNotif(id) {
+  await db.collection('notifications').doc(id).delete();
+}
+
+/* -------- DATE RANGE REPORTS -------- */
+async function exportDateRangeReport() {
+  const period = document.getElementById('reportPeriod').value;
+  const type = document.getElementById('reportType').value;
+  const msg = document.getElementById('dateReportMsg');
+  msg.textContent = 'Inatayarisha taarifa...'; msg.style.display = 'block'; msg.style.color = '#888';
+
+  const now = new Date();
+  let fromDate = new Date(0);
+  if (period === 'today') { fromDate = new Date(now.toDateString()); }
+  else if (period === 'week') { fromDate = new Date(now - 7*24*60*60*1000); }
+  else if (period === 'month') { fromDate = new Date(now - 30*24*60*60*1000); }
+  else if (period === 'year') { fromDate = new Date(now - 365*24*60*60*1000); }
+
+  try {
+    let rows = [];
+    if (type === 'users') {
+      const snap = await db.collection('users').get();
+      rows = [['Jina','Barua Pepe','Aina','Tarehe ya Kujiunga']];
+      snap.forEach(d => {
+        const u = d.data();
+        const joined = new Date(u.createdAt || 0);
+        if (joined >= fromDate) rows.push([u.name||'',u.email||'',u.role||'member',u.createdAt||'']);
+      });
+    } else if (type === 'quizScores') {
+      const snap = await db.collection('users').get();
+      rows = [['Jina','Barua Pepe','Tarehe','Alama','Jumla']];
+      snap.forEach(d => {
+        const u = d.data();
+        (u.scores||[]).forEach(s => {
+          const d = new Date(s.date || 0);
+          if (d >= fromDate) rows.push([u.name||'',u.email||'',s.date||'',s.score||0,s.total||10]);
+        });
+      });
+    } else if (type === 'comments') {
+      const snap = await db.collection('comments').get();
+      rows = [['Jina','Maoni','Tarehe']];
+      snap.forEach(d => {
+        const c = d.data();
+        if (new Date(c.createdAt||0) >= fromDate) rows.push([c.userName||'',c.text||'',c.createdAt||'']);
+      });
+    } else if (type === 'articles') {
+      const snap = await db.collection('articles').get();
+      rows = [['Kichwa','Maoni','Tarehe']];
+      snap.forEach(d => {
+        const a = d.data();
+        if (new Date(a.createdAt||0) >= fromDate) rows.push([a.title||'',a.views||0,a.createdAt||'']);
+      });
+    }
+    const labels = { today:'Leo', week:'Wiki', month:'Mwezi', year:'Mwaka', all:'Yote' };
+    downloadCSV(`taarifa-${type}-${labels[period]}.csv`, rows);
+    msg.textContent = '✅ Taarifa imepakiwa!'; msg.style.color = 'var(--green)';
+  } catch (err) {
+    msg.textContent = 'Hitilafu: ' + err.message; msg.style.color = '#c0392b';
+  }
+}
 
 /* -------- COMMENTS MANAGEMENT -------- */
 async function loadAllComments() {
@@ -618,7 +805,7 @@ async function loadThemePreview() {
 async function loadUserActivity() {
   const list = document.getElementById('userActivityList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('users').orderBy('lastLogin', 'desc').limit(20).get().catch(() => null);
+  const snap = await db.collection('users').limit(20).get().catch(() => null);
   if (!snap || snap.empty) {
     list.innerHTML = '<p style="color:#888">Hakuna taarifa za login bado.</p>';
     document.getElementById('userCount').textContent = 0;
@@ -639,13 +826,14 @@ async function loadUserActivity() {
 async function loadArticleViews() {
   const list = document.getElementById('articleViewsList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('articles').orderBy('views', 'desc').limit(10).get().catch(() => null);
+  const snap = await db.collection('articles').limit(10).get().catch(() => null);
   if (!snap || snap.empty) {
     list.innerHTML = '<p style="color:#888">Hakuna makala bado.</p>';
     return;
   }
+  const articleDocs = snap.docs.sort((a,b) => (b.data().views||0)-(a.data().views||0));
   list.innerHTML = '';
-  snap.forEach(doc => {
+  articleDocs.forEach(doc => {
     const d = doc.data();
     const item = document.createElement('div');
     item.className = 'download-item';
@@ -719,32 +907,33 @@ async function handleAddArticle(e) {
   return false;
 }
 
-async function loadArticlesList() {
+function loadArticlesList() {
   const list = document.getElementById('articleList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('articles').orderBy('createdAt', 'desc').get();
-  document.getElementById('artCount').textContent = snap.size;
-  if (snap.empty) {
-    list.innerHTML = '<p style="color:#888">Hakuna makala bado.</p>';
-    return;
-  }
-  list.innerHTML = '';
-  snap.forEach(doc => {
-    const d = doc.data();
-    const item = document.createElement('div');
-    item.className = 'download-item';
-    item.innerHTML = `
-      <span>${d.title}</span>
-      <button class="dl-btn" style="background:#c0392b" onclick="deleteArticle('${doc.id}')">Futa</button>
-    `;
-    list.appendChild(item);
+  db.collection('articles').onSnapshot(snap => {
+    document.getElementById('artCount').textContent = snap.size;
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna makala bado.</p>';
+      return;
+    }
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+    list.innerHTML = '';
+    docs.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <span style="font-size:0.88rem">${d.title}</span>
+        <button class="dl-btn" style="background:#c0392b" onclick="deleteArticle('${d.id}')">Futa</button>
+      `;
+      list.appendChild(item);
+    });
   });
 }
 
 async function deleteArticle(id) {
   if (!confirm('Una uhakika unataka kufuta makala hii?')) return;
   await db.collection('articles').doc(id).delete();
-  loadArticlesList();
 }
 
 async function handleAddDashItem(e) {
@@ -770,7 +959,7 @@ async function handleAddDashItem(e) {
 async function loadDashItemsList() {
   const list = document.getElementById('dashItemList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('dashboardItems').orderBy('order', 'asc').get();
+  const snap = await db.collection('dashboardItems').get();
   document.getElementById('dashItemCount').textContent = snap.size;
   if (snap.empty) {
     list.innerHTML = '<p style="color:#888">Hakuna vipengele vya ziada bado.</p>';
@@ -816,7 +1005,7 @@ async function handleAddNavItem(e) {
 async function loadNavItemsList() {
   const list = document.getElementById('navList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('navItems').orderBy('order', 'asc').get();
+  const snap = await db.collection('navItems').get();
   document.getElementById('navCount').textContent = snap.size;
   if (snap.empty) {
     list.innerHTML = '<p style="color:#888">Hakuna link za ziada bado.</p>';
@@ -877,33 +1066,36 @@ async function handleAddDownload(e) {
   return false;
 }
 
-async function loadDownloadsList() {
+function loadDownloadsList() {
   const list = document.getElementById('dlList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('downloads').orderBy('createdAt', 'desc').get();
-  document.getElementById('dlCount').textContent = snap.size;
-  if (snap.empty) {
+  db.collection('downloads').onSnapshot(snap => {
+    document.getElementById('dlCount').textContent = snap.size;
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna nyaraka bado.</p>';
+      return;
+    }
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+    list.innerHTML = '';
+    docs.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <span>${d.icon || '📄'} ${d.title}</span>
+        <button class="dl-btn" style="background:#c0392b" onclick="deleteDownload('${d.id}','${d.path||''}')">Futa</button>
+      `;
+      list.appendChild(item);
+    });
+  }, err => {
     list.innerHTML = '<p style="color:#888">Hakuna nyaraka bado.</p>';
-    return;
-  }
-  list.innerHTML = '';
-  snap.forEach(doc => {
-    const d = doc.data();
-    const item = document.createElement('div');
-    item.className = 'download-item';
-    item.innerHTML = `
-      <span>${d.icon || '📄'} ${d.title}</span>
-      <button class="dl-btn" style="background:#c0392b" onclick="deleteDownload('${doc.id}','${d.path}')">Futa</button>
-    `;
-    list.appendChild(item);
   });
 }
 
 async function deleteDownload(docId, path) {
   if (!confirm('Una uhakika unataka kufuta nyaraka hii?')) return;
-  await storage.ref().child(path).delete().catch(() => {});
+  if (path) await db.app.storage().ref().child(path).delete().catch(() => {});
   await db.collection('downloads').doc(docId).delete();
-  loadDownloadsList();
 }
 
 function extractYouTubeId(url) {
@@ -940,24 +1132,26 @@ async function handleSetVideo(e) {
   return false;
 }
 
-async function loadCurrentVideo() {
+function loadCurrentVideo() {
   const list = document.getElementById('videoList');
-  const snap = await db.collection('videos').orderBy('createdAt', 'desc').get();
-  document.getElementById('videoCount').textContent = snap.size;
-  if (snap.empty) {
-    list.innerHTML = '<p style="color:#888">Hakuna video bado.</p>';
-    return;
-  }
-  list.innerHTML = '';
-  snap.forEach(doc => {
-    const d = doc.data();
-    const item = document.createElement('div');
-    item.className = 'download-item';
-    item.innerHTML = `
-      <span>🎬 ${d.title}</span>
-      <button class="dl-btn" style="background:#c0392b" onclick="deleteVideo('${doc.id}')">Futa</button>
-    `;
-    list.appendChild(item);
+  db.collection('videos').onSnapshot(snap => {
+    document.getElementById('videoCount').textContent = snap.size;
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna video bado.</p>';
+      return;
+    }
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+    list.innerHTML = '';
+    docs.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <span>🎬 ${d.title}</span>
+        <button class="dl-btn" style="background:#c0392b" onclick="deleteVideo('${d.id}')">Futa</button>
+      `;
+      list.appendChild(item);
+    });
   });
 }
 
@@ -1122,32 +1316,36 @@ async function handleAddQuestion(e) {
   return false;
 }
 
-async function loadQuestionsList() {
+function loadQuestionsList() {
   const list = document.getElementById('questionList');
   list.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('questions').orderBy('order', 'asc').get();
-  document.getElementById('qCount').textContent = snap.size;
-  if (snap.empty) {
-    list.innerHTML = '<p style="color:#888">Hakuna maswali ya database bado. Quiz itatumia maswali ya default (10).</p>';
-    return;
-  }
-  list.innerHTML = '';
-  snap.forEach(doc => {
-    const d = doc.data();
-    const item = document.createElement('div');
-    item.className = 'download-item';
-    item.innerHTML = `
-      <span>${d.q}</span>
-      <button class="dl-btn" style="background:#c0392b" onclick="deleteQuestion('${doc.id}')">Futa</button>
-    `;
-    list.appendChild(item);
+  db.collection('questions').onSnapshot(snap => {
+    document.getElementById('qCount').textContent = snap.size;
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna maswali ya database bado. Quiz itatumia maswali ya default (50).</p>';
+      return;
+    }
+    const docs = snap.docs.sort((a,b) => (a.data().order||0)-(b.data().order||0));
+    list.innerHTML = '';
+    docs.forEach(doc => {
+      const d = doc.data();
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <span style="font-size:0.88rem">${d.q}</span>
+        <button class="dl-btn" style="background:#c0392b;flex-shrink:0" onclick="deleteQuestion('${doc.id}')">Futa</button>
+      `;
+      list.appendChild(item);
+    });
+  }, err => {
+    list.innerHTML = '<p style="color:#c0392b">Hitilafu ya kupakia maswali.</p>';
   });
 }
 
 async function deleteQuestion(id) {
   if (!confirm('Una uhakika unataka kufuta swali hili?')) return;
   await db.collection('questions').doc(id).delete();
-  loadQuestionsList();
+  /* onSnapshot itasasisha orodha kiotomatiki */
 }
 
 async function handleUploadImage(e) {
@@ -1173,7 +1371,7 @@ async function handleUploadImage(e) {
 async function loadImageGallery() {
   const gallery = document.getElementById('imageGallery');
   gallery.innerHTML = '<p style="color:#888">Inapakia...</p>';
-  const snap = await db.collection('images').orderBy('createdAt', 'desc').get();
+  const snap = await db.collection('images').get();
   document.getElementById('imgCount').textContent = snap.size;
   if (snap.empty) {
     gallery.innerHTML = '<p style="color:#888">Hakuna picha zilizopakiwa bado.</p>';
@@ -1202,6 +1400,5 @@ async function deleteImage(docId) {
 </body>
 </html>
 
-  
 
 

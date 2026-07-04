@@ -85,17 +85,21 @@ auth.onAuthStateChanged(async (user) => {
 
 async function loadArticles() {
   const container = document.getElementById('articlesContainer');
-  try {
-    const snap = await db.collection('articles').orderBy('createdAt', 'desc').get();
+  container.innerHTML = '<p style="color:#888;text-align:center">Inapakia makala...</p>';
+  
+  /* Real-time — makala mpya zinaonekana papo hapo */
+  db.collection('articles').onSnapshot(snap => {
     if (snap.empty) {
-      container.innerHTML = '<p style="color:#888;text-align:center">Hakuna makala bado. Rudi tena baadaye.</p>';
+      container.innerHTML = '<p style="color:#888;text-align:center">Hakuna makala bado.</p>';
+      ALL_ARTICLES = [];
       return;
     }
-    ALL_ARTICLES = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    ALL_ARTICLES = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
     renderArticles(ALL_ARTICLES);
-  } catch (err) {
+  }, err => {
     container.innerHTML = '<p style="color:#888;text-align:center">Hakuna makala bado.</p>';
-  }
+  });
 }
 
 function renderArticles(list) {
@@ -185,4 +189,3 @@ recordPageView('makala');
 </script>
 </body>
 </html>
-

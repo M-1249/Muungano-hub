@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sera ya Faragha | Union Hub Tanzania</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="logo">UNION<span>HUB</span> TZ</a>
+  <button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">Home</a>
+    <a href="login.html" class="nav-cta">Login</a>
+    <button class="lang-btn" id="langToggleBtn" onclick="toggleLang()">EN</button>
+  </div>
+</nav>
+
+<header class="hero" style="padding:50px 20px 60px">
+  <h1>Sera ya Faragha</h1>
+  <p>Privacy Policy — Jinsi tunavyotunza taarifa zako</p>
+</header>
+
+<section class="section" style="max-width:700px">
+  <div class="card" style="border-top-color:var(--blue);margin-bottom:16px">
+    <h3>1. Taarifa Tunazokusanya</h3>
+    <p>Tunakusanya taarifa zifuatazo unapojisajili: jina lako, barua pepe, na matokeo ya quiz. Hatukusanyi taarifa za kibinafsi zaidi ya hizo bila idhini yako.</p>
+  </div>
+  <div class="card" style="border-top-color:var(--green);margin-bottom:16px">
+    <h3>2. Jinsi Tunavyotumia Taarifa</h3>
+    <p>Taarifa zako zinatumika pekee kwa: (i) kuonyesha matokeo yako ya quiz, (ii) kutengeneza cheti chako cha pongezi, na (iii) kuboresha huduma zetu.</p>
+  </div>
+  <div class="card" style="border-top-color:var(--yellow);margin-bottom:16px">
+    <h3>3. Usalama wa Taarifa</h3>
+    <p>Taarifa zako zinawekwa salama kwenye Google Firebase, mojawapo ya mifumo salama zaidi ya uhifadhi wa data duniani. Hatuzifichi wala kuzisambaza kwa wahusika wa tatu.</p>
+  </div>
+  <div class="card" style="border-top-color:var(--blue);margin-bottom:16px">
+    <h3>4. Haki Zako</h3>
+    <p>Una haki ya: kuomba kufutwa kwa akaunti yako na taarifa zako zote, kurekebisha taarifa zako, na kuuliza nini kinatumika kutoka kwenye taarifa zako. Wasiliana nasi kwa: <strong>mkungujames@gmail.com</strong></p>
+  </div>
+  <div class="card" style="border-top-color:var(--green)">
+    <h3>5. Mabadiliko ya Sera</h3>
+    <p>Sera hii inaweza kubadilishwa mara kwa mara. Mabadiliko yoyote makubwa yatajulishwa kupitia tovuti hii. Sera hii ilianza kutumika: Julai 2026.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid" id="footerGrid"></div>
+  <div class="footer-bottom">
+    &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
+    <span style="font-size:0.75rem;color:#777">Imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/chatbot.js"></script>
+<script>loadFooter();</script>
+</body>
+</html>

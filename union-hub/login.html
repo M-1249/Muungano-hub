@@ -84,14 +84,26 @@ function sendPasswordReset() {
     msg.style.display = 'block';
     return;
   }
-  auth.sendPasswordResetEmail(email).then(() => {
-    msg.textContent = 'Tumetuma link kwenye barua pepe yako. Angalia inbox (au spam folder).';
+  msg.textContent = 'Inatuma...';
+  msg.style.color = '#888';
+  msg.style.display = 'block';
+
+  auth.sendPasswordResetEmail(email, {
+    url: window.location.origin + '/login.html'
+  }).then(() => {
+    msg.innerHTML = '✅ Link imetumwa! Angalia <strong>inbox</strong> au <strong>spam folder</strong> ya barua pepe yako.';
     msg.style.color = 'var(--green)';
-    msg.style.display = 'block';
-  }).catch((err) => {
-    msg.textContent = 'Hitilafu: ' + translateFirebaseError(err);
+  }).catch(err => {
+    if (err.code === 'auth/user-not-found') {
+      msg.textContent = 'Barua pepe hii haijasajiliwa. Jisajili kwanza.';
+    } else if (err.code === 'auth/invalid-email') {
+      msg.textContent = 'Barua pepe si sahihi.';
+    } else if (err.code === 'auth/network-request-failed') {
+      msg.textContent = 'Tatizo la mtandao. Angalia internet yako na ujaribu tena.';
+    } else {
+      msg.textContent = 'Hitilafu: ' + err.message;
+    }
     msg.style.color = '#c0392b';
-    msg.style.display = 'block';
   });
 }
 
@@ -114,4 +126,5 @@ async function handleLogin(e) {
 </script>
 </body>
 </html>
+
 
