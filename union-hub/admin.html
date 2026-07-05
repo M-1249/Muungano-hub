@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="sw">
 <head>
@@ -378,8 +379,9 @@
         <input type="text" id="dlIcon" placeholder="📄" value="📄">
       </div>
       <div class="field">
-        <label>Chagua Faili (PDF/Doc)</label>
-        <input type="file" id="dlFile" required>
+        <label>Link ya Faili (URL)</label>
+        <input type="url" id="dlUrl" required placeholder="https://drive.google.com/file/d/... au link nyingine">
+        <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia PDF kwenye <strong>Google Drive</strong> → Share → "Anyone with link" → Nakili link hapa.</p>
       </div>
       <button type="submit" class="btn btn-primary btn-block" id="dlBtn">Ongeza kwenye Download Centre</button>
       <p id="dlMsg" style="margin-top:10px;color:var(--green);display:none"></p>
@@ -426,8 +428,9 @@
         </select>
       </div>
       <div class="field">
-        <label>Chagua Picha Mpya</label>
-        <input type="file" id="siteImgFile" accept="image/*" required>
+        <label>Link ya Picha (URL)</label>
+        <input type="url" id="siteImgUrl" required placeholder="https://i.imgur.com/xxxxx.jpg">
+        <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia picha kwenye <a href="https://imgur.com" target="_blank" style="color:var(--blue)">imgur.com</a> (bure, bila akaunti) → bonyeza picha → nakili URL.</p>
       </div>
       <button type="submit" class="btn btn-primary btn-block" id="siteImgBtn">Badilisha Picha</button>
       <p id="siteImgMsg" style="margin-top:10px;color:var(--green);display:none"></p>
@@ -1034,35 +1037,23 @@ async function handleAddDownload(e) {
   e.preventDefault();
   const title = document.getElementById('dlTitle').value.trim();
   const icon = document.getElementById('dlIcon').value.trim() || '📄';
-  const file = document.getElementById('dlFile').files[0];
-  const btn = document.getElementById('dlBtn');
-  if (!file) return false;
+  const url = document.getElementById('dlUrl').value.trim();
 
-  btn.disabled = true;
-  btn.textContent = 'Inapakia...';
+  if (!url) { alert('Tafadhali weka link ya faili.'); return false; }
 
   try {
-    const path = 'downloads/' + Date.now() + '_' + file.name;
-    const ref = storage.ref().child(path);
-    await ref.put(file);
-    const url = await ref.getDownloadURL();
-
     await db.collection('downloads').add({
-      title, icon, url, path, createdAt: new Date().toISOString()
+      title, icon, url, createdAt: new Date().toISOString()
     });
-
     document.getElementById('downloadForm').reset();
     document.getElementById('dlIcon').value = '📄';
     const msg = document.getElementById('dlMsg');
-    msg.textContent = 'Nyaraka imeongezwa kwenye Download Centre!';
+    msg.textContent = '✅ Nyaraka imeongezwa kwenye Download Centre!';
     msg.style.display = 'block';
-    loadDownloadsList();
+    setTimeout(() => msg.style.display = 'none', 3000);
   } catch (err) {
     alert('Hitilafu: ' + err.message);
   }
-
-  btn.disabled = false;
-  btn.textContent = 'Ongeza kwenye Download Centre';
   return false;
 }
 
@@ -1164,34 +1155,23 @@ async function deleteVideo(id) {
 async function handleSiteImageUpload(e) {
   e.preventDefault();
   const slot = document.getElementById('imgSlot').value;
-  const file = document.getElementById('siteImgFile').files[0];
-  const btn = document.getElementById('siteImgBtn');
-  if (!file) return false;
+  const url = document.getElementById('siteImgUrl').value.trim();
 
-  btn.disabled = true;
-  btn.textContent = 'Inapakia...';
+  if (!url) { alert('Tafadhali weka link ya picha.'); return false; }
 
   try {
-    const path = 'site/' + slot + '_' + Date.now();
-    const ref = storage.ref().child(path);
-    await ref.put(file);
-    const url = await ref.getDownloadURL();
-
     await db.collection('siteImages').doc(slot).set({
-      url, path, updatedAt: new Date().toISOString()
+      url, updatedAt: new Date().toISOString()
     });
-
     document.getElementById('siteImageForm').reset();
     const msg = document.getElementById('siteImgMsg');
-    msg.textContent = 'Picha ya mukurasa imebadilishwa! Itaonekana kwenye website mara utakapoifresh.';
+    msg.textContent = '✅ Picha imebadilishwa! Refresh website kuiona.';
     msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 4000);
     loadSiteImagesPreview();
   } catch (err) {
     alert('Hitilafu: ' + err.message);
   }
-
-  btn.disabled = false;
-  btn.textContent = 'Badilisha Picha';
   return false;
 }
 
