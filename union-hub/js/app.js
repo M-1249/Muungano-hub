@@ -349,30 +349,50 @@ let ACTIVE_QUESTIONS = QUIZ_QUESTIONS;
 
 async function loadQuiz() {
   quizState = { index: 0, score: 0, answered: false };
-  const container = document.getElementById('quizContainer');
-  if (container) container.innerHTML = '<p style="text-align:center;padding:30px;color:#888">Inapakia maswali...</p>';
 
-  try {
-    /* Tumia get() bila orderBy ili kuepuka index error */
-    const snap = await db.collection('questions').get();
-    if (!snap.empty) {
-      const fromDB = snap.docs.map(doc => {
-        const d = doc.data();
-        return { q: d.q, options: d.options, answer: Number(d.answer) };
-      });
-      /* Changanya maswali ya DB na default zote 50 (DB zinakuja mbele) */
-      const dbKeys = new Set(fromDB.map(q => q.q.trim().toLowerCase()));
-      const extras = QUIZ_QUESTIONS.filter(q => !dbKeys.has(q.q.trim().toLowerCase()));
-      ACTIVE_QUESTIONS = [...fromDB, ...extras];
-    } else {
-      ACTIVE_QUESTIONS = QUIZ_QUESTIONS;
-    }
-  } catch (err) {
-    console.warn('Firestore error, using default questions:', err.message);
-    ACTIVE_QUESTIONS = QUIZ_QUESTIONS;
-  }
-
+  /* HATUA 1: Onyesha maswali ya default MARA MOJA bila kusubiri */
+  ACTIVE_QUESTIONS = [...QUIZ_QUESTIONS];
   renderQuestion();
+
+  /* HATUA 2: Jaribu Firestore kwa background (bila kuzuia quiz) */
+  if (typeof db !== 'undefined') {
+    try {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 4000)
+      );
+      const snap = await Promise.race([
+        db.collection('questions').get(),
+        timeout
+      ]);
+
+      if (!snap.empty) {
+        const fromDB = snap.docs.map(doc => {
+          const d = doc.data();
+          return {
+            q: d.q,
+            options: Array.isArray(d.options) ? d.options : [],
+            answer: Number(d.answer) || 0
+          };
+        }).filter(q => q.q && q.options.length === 4);
+
+        if (fromDB.length > 0) {
+          const dbKeys = new Set(fromDB.map(q => q.q.trim().toLowerCase()));
+          const extras = QUIZ_QUESTIONS.filter(q =>
+            !dbKeys.has(q.q.trim().toLowerCase())
+          );
+          ACTIVE_QUESTIONS = [...fromDB, ...extras];
+
+          /* Reanza quiz na maswali yote kama bado hatujaanza kujibu */
+          if (quizState.index === 0 && !quizState.answered) {
+            renderQuestion();
+          }
+        }
+      }
+    } catch (err) {
+      /* Endelea na maswali ya default — hakuna shida */
+      console.log('Using default questions:', err.message);
+    }
+  }
 }
 
 function renderQuestion() {
@@ -628,4 +648,5 @@ async function markAllRead() {
 document.addEventListener('DOMContentLoaded', () => {
   auth.onAuthStateChanged(user => { if (user) initNotificationBell(); });
 });
+
 
