@@ -25,7 +25,7 @@
   </div>
 </nav>
 
-<header class="hero" style="padding:50px 20px 60px">
+<header class="hero" id="historyHeroSection" style="padding:50px 20px 60px">
   <h1>Historia ya Muungano</h1>
   <p>Safari ya kuunganika kwa Tanganyika na Zanzibar kuwa Taifa moja.</p>
 </header>
@@ -93,32 +93,10 @@
 </section>
 
 <footer>
-  <div class="footer-grid">
-    <div>
-      <h4>Union Hub TZ</h4>
-      <a href="history.html" data-i18n="nav_history">Historia</a>
-      <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
-    <a href="makala.html">Makala</a>
-    <a href="video.html">Video</a>
-    <a href="picha.html">Picha</a>
-      <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
-    </div>
-    <div>
-      <h4>Akaunti</h4>
-      <a href="login.html">Login</a>
-      <a href="register.html">Jisajili</a>
-      <a href="dashboard.html">Dashboard</a>
-    </div>
-    <div>
-      <h4>Mawasiliano</h4>
-      <a href="#">Facebook</a>
-      <a href="#">Instagram</a>
-      <a href="#">Wasiliana Nasi</a>
-    </div>
-  </div>
+  <div class="footer-grid" id="footerGrid"></div>
   <div class="footer-bottom">
     &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
-    <span style="font-size:0.75rem;color:#777">Tovuti hii imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
+    <span style="font-size:0.75rem;color:#777">Imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
   </div>
 </footer>
 
@@ -159,8 +137,25 @@ function filterHistoryBlocks() {
 }
 loadHistoryBlocks();
 recordPageView('history');
+
+/* Pakia picha ya hero ya historia */
+(async function() {
+  try {
+    const doc = await db.collection('siteImages').doc('history_img').get();
+    if (doc.exists && doc.data().url) {
+      const hero = document.getElementById('historyHeroSection');
+      if (hero) {
+        hero.style.backgroundImage = `url('${doc.data().url}')`;
+        hero.style.backgroundSize = 'cover';
+        hero.style.backgroundPosition = 'center';
+        hero.style.backgroundRepeat = 'no-repeat';
+      }
+    }
+  } catch (err) {}
+})();
 </script>
 </body>
 </html>
+
 
 

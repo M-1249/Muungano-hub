@@ -1,4 +1,4 @@
-)<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sw">
 <head>
 <meta charset="UTF-8">
@@ -85,32 +85,10 @@
 </section>
 
 <footer>
-  <div class="footer-grid">
-    <div>
-      <h4>Union Hub TZ</h4>
-      <a href="history.html" data-i18n="nav_history">Historia</a>
-      <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
-    <a href="makala.html">Makala</a>
-    <a href="video.html">Video</a>
-    <a href="picha.html">Picha</a>
-      <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
-    </div>
-    <div>
-      <h4>Akaunti</h4>
-      <a href="login.html">Login</a>
-      <a href="register.html">Jisajili</a>
-      <a href="dashboard.html">Dashboard</a>
-    </div>
-    <div>
-      <h4>Mawasiliano</h4>
-      <a href="#">Facebook</a>
-      <a href="#">Instagram</a>
-      <a href="#">Wasiliana Nasi</a>
-    </div>
-  </div>
+  <div class="footer-grid" id="footerGrid"></div>
   <div class="footer-bottom">
     &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
-    <span style="font-size:0.75rem;color:#777">Tovuti hii imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
+    <span style="font-size:0.75rem;color:#777">Imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
   </div>
 </footer>
 
@@ -156,14 +134,15 @@ recordPageView('benefits');
 (async function() {
   try {
     const doc = await db.collection('siteImages').doc('benefits_img').get();
-    if (doc.exists) {
+    if (doc.exists && doc.data().url) {
       document.getElementById('benefitsImgSlot').innerHTML =
-        `<img src="${doc.data().url}" style="border-radius:10px;width:100%;max-height:260px;object-fit:cover">`;
+        `<img src="${doc.data().url}" style="border-radius:10px;width:100%;max-height:280px;object-fit:cover;box-shadow:0 4px 14px rgba(0,0,0,0.12)">`;
     }
   } catch (err) {}
 })();
 </script>
 </body>
 </html>
+
 
 

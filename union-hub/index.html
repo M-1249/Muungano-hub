@@ -98,18 +98,25 @@
 <script>
 async function loadSiteImages() {
   try {
+    /* Hero background image */
     const heroDoc = await db.collection('siteImages').doc('hero_bg').get();
-    if (heroDoc.exists) {
-      const hero = document.getElementById('heroSection');
-      hero.style.backgroundImage = `linear-gradient(135deg, rgba(13,19,16,0.75), rgba(28,111,165,0.6)), url('${heroDoc.data().url}')`;
+    const hero = document.getElementById('heroSection');
+    if (heroDoc.exists && heroDoc.data().url && hero) {
+      hero.style.backgroundImage = `url('${heroDoc.data().url}')`;
       hero.style.backgroundSize = 'cover';
       hero.style.backgroundPosition = 'center';
+      hero.style.backgroundRepeat = 'no-repeat';
+      /* Overlay ya ::before inashughulika na giza — CSS inafanya kazi */
     }
+
+    /* Historia image */
     const historyDoc = await db.collection('siteImages').doc('history_img').get();
-    if (historyDoc.exists) {
+    if (historyDoc.exists && historyDoc.data().url) {
       document.getElementById('historyImgSlot').innerHTML =
-        `<img src="${historyDoc.data().url}" style="border-radius:10px;width:100%;max-height:260px;object-fit:cover">`;
+        `<img src="${historyDoc.data().url}" style="border-radius:10px;width:100%;max-height:280px;object-fit:cover;box-shadow:0 4px 14px rgba(0,0,0,0.12)">`;
     }
+
+    /* Video */
     const videoSnap = await db.collection('videos').limit(5).get();
     const videoWrap = document.getElementById('eduVideoWrap');
     if (!videoSnap.empty) {
@@ -118,7 +125,7 @@ async function loadSiteImages() {
     } else {
       videoWrap.innerHTML = '<p style="text-align:center;padding:30px;color:#888">Hakuna video bado.</p>';
     }
-  } catch (err) { /* silently ignore if not configured yet */ }
+  } catch (err) { /* silently ignore */ }
 }
 async function runGlobalSearch() {
   const q = document.getElementById('globalSearch').value.trim().toLowerCase();
@@ -159,6 +166,7 @@ recordPageView('home');
 </script>
 </body>
 </html>
+
 
 
 

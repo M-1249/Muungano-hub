@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="sw">
 <head>
@@ -414,30 +413,43 @@
   <div class="download-list" id="videoList" style="margin-bottom:30px"></div>
 
   <!-- SITE IMAGES (Front Page) -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Mukurasa wa Mbele</span>
-  <h2 class="section-title">Picha za Front Page</h2>
+  <span class="section-eyebrow" style="margin-top:40px;display:block">Picha za Kurasa</span>
+  <h2 class="section-title">Picha za Background</h2>
+
+  <div style="background:#fff7e6;border:1px solid #f2c14e;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:0.85rem;color:#7a5d00">
+    💡 <strong>Jinsi ya kupata link ya picha:</strong><br>
+    1. Nenda <strong>imgur.com</strong> → bonyeza "New post" → weka picha yako<br>
+    2. Baada ya kupakia, bonyeza picha kubwa → bonyeza kulia → "Copy image address"<br>
+    3. Bandika link hiyo hapa chini (lazima iishe na <code>.jpg</code> au <code>.png</code>)<br>
+    Au tumia link ya picha yoyote ya mtandaoni.
+  </div>
 
   <div class="quiz-box" style="margin-bottom:30px">
     <form id="siteImageForm" onsubmit="return handleSiteImageUpload(event)">
       <div class="field">
-        <label>Sehemu (Slot)</label>
+        <label>Chagua Sehemu</label>
         <select id="imgSlot" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
-          <option value="hero_bg">Hero (Ukurasa wa Mwanzo - Background)</option>
-          <option value="history_img">Historia - Picha kuu</option>
-          <option value="benefits_img">Faida - Picha kuu</option>
+          <option value="hero_bg">🏠 Hero — Background ya Ukurasa wa Mwanzo</option>
+          <option value="history_img">📖 Historia — Picha ya Sehemu ya Historia</option>
+          <option value="benefits_img">✅ Faida — Picha ya Sehemu ya Faida</option>
         </select>
       </div>
       <div class="field">
         <label>Link ya Picha (URL)</label>
-        <input type="url" id="siteImgUrl" required placeholder="https://i.imgur.com/xxxxx.jpg">
-        <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia picha kwenye <a href="https://imgur.com" target="_blank" style="color:var(--blue)">imgur.com</a> (bure, bila akaunti) → bonyeza picha → nakili URL.</p>
+        <input type="url" id="siteImgUrl" placeholder="https://i.imgur.com/xxxxx.jpg">
+        <p style="font-size:0.78rem;color:#888;margin-top:5px">
+          Acha tupu na bonyeza "Futa Picha" kuondoa picha iliyopo na kurudi kwa rangi za kawaida.
+        </p>
       </div>
-      <button type="submit" class="btn btn-primary btn-block" id="siteImgBtn">Badilisha Picha</button>
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary" style="flex:1">✅ Weka Picha</button>
+        <button type="button" class="btn btn-secondary" style="flex:1;color:#c0392b;border-color:#c0392b" onclick="removeSiteImage()">🗑️ Futa Picha</button>
+      </div>
       <p id="siteImgMsg" style="margin-top:10px;color:var(--green);display:none"></p>
     </form>
   </div>
 
-  <h3 style="margin-bottom:12px">Picha Zilizopo Sasa</h3>
+  <h3 style="margin-bottom:12px">Picha Zilizowekwa Sasa</h3>
   <div class="card-grid" id="siteImagesPreview"></div>
 
   <!-- UPLOAD IMAGE -->
@@ -1157,7 +1169,15 @@ async function handleSiteImageUpload(e) {
   const slot = document.getElementById('imgSlot').value;
   const url = document.getElementById('siteImgUrl').value.trim();
 
-  if (!url) { alert('Tafadhali weka link ya picha.'); return false; }
+  if (!url) {
+    alert('Weka link ya picha kwanza. Kama unataka kufuta picha, bonyeza kitufe cha "Futa Picha".');
+    return false;
+  }
+
+  /* Hakikisha ni link ya picha halisi */
+  if (!url.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) && !url.includes('imgur') && !url.includes('unsplash') && !url.includes('googleusercontent')) {
+    if (!confirm('Link hii haionekani kama picha. Unataka kuendelea?')) return false;
+  }
 
   try {
     await db.collection('siteImages').doc(slot).set({
@@ -1165,7 +1185,8 @@ async function handleSiteImageUpload(e) {
     });
     document.getElementById('siteImageForm').reset();
     const msg = document.getElementById('siteImgMsg');
-    msg.textContent = '✅ Picha imebadilishwa! Refresh website kuiona.';
+    msg.textContent = '✅ Picha imewekwa! Refresh website kuiona.';
+    msg.style.color = 'var(--green)';
     msg.style.display = 'block';
     setTimeout(() => msg.style.display = 'none', 4000);
     loadSiteImagesPreview();
@@ -1173,6 +1194,27 @@ async function handleSiteImageUpload(e) {
     alert('Hitilafu: ' + err.message);
   }
   return false;
+}
+
+async function removeSiteImage() {
+  const slot = document.getElementById('imgSlot').value;
+  const slotNames = {
+    hero_bg: 'Hero (Ukurasa wa Mwanzo)',
+    history_img: 'Historia',
+    benefits_img: 'Faida'
+  };
+  if (!confirm(`Futa picha ya ${slotNames[slot]}? Itarudi kwa rangi za kawaida.`)) return;
+  try {
+    await db.collection('siteImages').doc(slot).delete();
+    const msg = document.getElementById('siteImgMsg');
+    msg.textContent = '🗑️ Picha imefutwa. Refresh website kuona mabadiliko.';
+    msg.style.color = '#888';
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 4000);
+    loadSiteImagesPreview();
+  } catch (err) {
+    alert('Hitilafu: ' + err.message);
+  }
 }
 
 async function loadSiteImagesPreview() {
@@ -1379,6 +1421,7 @@ async function deleteImage(docId) {
 </script>
 </body>
 </html>
+
 
 
 

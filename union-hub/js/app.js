@@ -16,22 +16,73 @@ async function recordPageView(pageName) {
 async function applyBranding() {
   if (typeof db === 'undefined') return;
   try {
+    /* --- Logo --- */
     const brandDoc = await db.collection('siteSettings').doc('branding').get();
     if (brandDoc.exists && brandDoc.data().logoUrl) {
       const logo = document.querySelector('.navbar .logo');
       if (logo) {
-        logo.innerHTML = `<img src="${brandDoc.data().logoUrl}" style="height:36px;vertical-align:middle">`;
+        logo.innerHTML = `<img src="${brandDoc.data().logoUrl}" style="height:36px;vertical-align:middle;border-radius:4px">`;
       }
     }
+
+    /* --- Hero Background Image --- */
+    const heroImgDoc = await db.collection('siteImages').doc('hero_bg').get();
+    const hero = document.querySelector('.hero');
+
+    if (hero) {
+      if (heroImgDoc.exists && heroImgDoc.data().url) {
+        /* Weka picha kama background */
+        hero.style.backgroundImage = `url('${heroImgDoc.data().url}')`;
+        hero.style.backgroundSize = 'cover';
+        hero.style.backgroundPosition = 'center';
+        /* Overlay inabaki kutoka CSS ::before — maandishi yanaonekana */
+      } else {
+        /* Hakuna picha — tumia gradient ya kawaida */
+        hero.style.backgroundImage = 'none';
+      }
+    }
+
+    /* --- Hero Overlay Colors (rangi juu ya picha) --- */
     const themeDoc = await db.collection('siteSettings').doc('theme').get();
-    if (themeDoc.exists) {
+    if (themeDoc.exists && hero) {
       const t = themeDoc.data();
-      const hero = document.querySelector('.hero');
-      if (hero && t.heroColor1) {
-        hero.style.background = `linear-gradient(135deg, ${t.heroColor1} 0%, ${t.heroColor2} 60%, ${t.heroColor3} 100%)`;
+      if (t.heroColor1) {
+        /* Badilisha overlay ya ::before kwa kutumia CSS variable */
+        const c1 = hexToRgb(t.heroColor1);
+        const c2 = hexToRgb(t.heroColor2 || t.heroColor1);
+        const c3 = hexToRgb(t.heroColor3 || t.heroColor1);
+
+        /* Injecting override via style tag */
+        let styleTag = document.getElementById('heroOverrideStyle');
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.id = 'heroOverrideStyle';
+          document.head.appendChild(styleTag);
+        }
+        styleTag.textContent = `.hero::before {
+          background: linear-gradient(135deg,
+            rgba(${c1},0.75) 0%,
+            rgba(${c2},0.62) 60%,
+            rgba(${c3},0.55) 100%) !important;
+        }`;
+
+        /* Kama hakuna picha, badilisha background color badala yake */
+        if (!heroImgDoc.exists || !heroImgDoc.data().url) {
+          hero.style.background = `linear-gradient(135deg, ${t.heroColor1} 0%, ${t.heroColor2 || t.heroColor1} 60%, ${t.heroColor3 || t.heroColor1} 100%)`;
+        }
       }
     }
+
   } catch (err) { /* ignore */ }
+}
+
+function hexToRgb(hex) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(h => h + h).join('');
+  const r = parseInt(hex.substring(0,2), 16);
+  const g = parseInt(hex.substring(2,4), 16);
+  const b = parseInt(hex.substring(4,6), 16);
+  return `${r},${g},${b}`;
 }
 document.addEventListener('DOMContentLoaded', applyBranding);
 
@@ -648,5 +699,6 @@ async function markAllRead() {
 document.addEventListener('DOMContentLoaded', () => {
   auth.onAuthStateChanged(user => { if (user) initNotificationBell(); });
 });
+
 
 

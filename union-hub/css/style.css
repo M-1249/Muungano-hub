@@ -107,6 +107,9 @@ img { max-width: 100%; display: block; }
 /* ---------- HERO ---------- */
 .hero {
   background: linear-gradient(135deg, var(--black) 0%, var(--green) 60%, var(--blue) 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text-light);
   text-align: center;
   padding: 70px 20px 80px;
@@ -114,11 +117,31 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
 }
 
+/* Overlay inayowekwa juu ya picha ili maandishi yasonekane */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(13,19,16,0.72) 0%,
+    rgba(27,122,61,0.60) 60%,
+    rgba(28,111,165,0.55) 100%);
+  z-index: 0;
+  transition: background 0.3s;
+}
+
+/* Maandishi yawe juu ya overlay */
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
 .hero::after {
   content: "";
   position: absolute;
   bottom: -2px; left: 0; right: 0;
   height: 6px;
+  z-index: 2;
   background: repeating-linear-gradient(90deg, var(--yellow) 0 20px, var(--green-light) 20px 40px);
 }
 
@@ -623,5 +646,6 @@ footer {
   cursor: pointer;
   line-height: 1;
 }
+
 
 
