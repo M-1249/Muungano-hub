@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Zuia Google isiosome kurasa za Admin na Dashboard
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /profile.html
+Disallow: /login.html
+Disallow: /register.html
+
+# Ambia Google wapi sitemap ipo
+Sitemap: https://muungano-hub.netlify.app/sitemap.xml

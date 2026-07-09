@@ -3,7 +3,7 @@
    ============================
    HATUA ZA KUWEKA DATABASE YAKO (FREE):
 
-   1. Fungua https://console.firebase.google.com
+   1. Fungua https://co:nsole.firebase.google.com
    2. Bonyeza "Add Project" -> ipe jina "union-hub-tz" -> Create.
    3. Kwenye menu ya kushoto: "Build" -> "Authentication" -> "Get Started"
       -> Chagua "Email/Password" -> Enable -> Save.
@@ -31,3 +31,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
+// Anzisha App Check kwa ajili ya reCAPTCHA v3
+const appCheck = firebase.appCheck();
+appCheck.activate('6Lf_vEgtAAAAAEf4lDBv6idyfTa9GowJRj4zSMIx', true);
