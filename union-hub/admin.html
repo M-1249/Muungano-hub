@@ -5,6 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel | Union Hub Tanzania</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+  /* Styles za Navigation Tabs na Buttons */
+  .admin-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    padding: 10px 18px;
+    border: none;
+    background: #e0e0e0;
+    color: #333;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background: var(--blue, #1c6fa5);
+    color: #fff;
+  }
+  .admin-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+  .form-grid input, .form-grid textarea {
+    width: 100%;
+    padding: 11px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .btn-save {
+    background: var(--green, #1b7a3d);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-save:hover {
+    opacity: 0.9;
+  }
+</style>
 </head>
 <body>
 
@@ -23,457 +82,495 @@
     <h1>🔐 Admin Panel</h1>
   </div>
 
-  <!-- ADD QUESTION -->
-  <!-- MAONI YA WATUMIAJI -->
-  <span class="section-eyebrow" style="margin-top:0;display:block">Maoni</span>
-  <h2 class="section-title">Maoni ya Watumiaji kwenye Makala</h2>
-  <div class="quiz-box" style="margin-bottom:10px">
-    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="loadAllComments()" style="flex:1">Onyesha Maoni Yote</button>
-      <button class="btn btn-secondary" onclick="exportComments()" style="flex:1;color:var(--blue);border-color:var(--blue)">📥 Pakua CSV</button>
-    </div>
-    <p style="font-size:0.82rem;color:#888">Maoni (<span id="commentsCount">0</span>)</p>
-  </div>
-  <div class="download-list" id="commentsList" style="margin-bottom:30px"></div>
-
-  <!-- DOWNLOAD ACTIVITIES / ANALYTICS -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Utafiti</span>
-  <h2 class="section-title">Pakua Taarifa za Shughuli (Analytics)</h2>
-  <div class="quiz-box" style="margin-bottom:30px">
-    <p style="font-size:0.9rem;color:#444;margin-bottom:14px">Pakua taarifa kamili kuhusu jinsi tovuti inavyotumiwa.</p>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn btn-primary" onclick="exportActivity('pageViews')">📊 Idadi ya Maoni ya Kurasa (CSV)</button>
-      <button class="btn btn-primary" onclick="exportActivity('users')">👥 Taarifa za Watumiaji (CSV)</button>
-      <button class="btn btn-primary" onclick="exportActivity('quizScores')">🧠 Matokeo ya Quiz (CSV)</button>
-      <button class="btn btn-primary" onclick="exportActivity('articles')">📰 Takwimu za Makala (CSV)</button>
-    </div>
-    <p id="exportMsg" style="margin-top:12px;color:var(--green);font-size:0.85rem;display:none"></p>
+  <!-- TAB NAVIGATION -->
+  <div class="admin-tabs">
+      <button class="tab-btn active" onclick="openTab(event, 'dashboard')">📊 Dashboard Main</button>
+      <button class="tab-btn" onclick="openTab(event, 'timeline')">📅 Time Machine</button>
+      <button class="tab-btn" onclick="openTab(event, 'ar')">🔮 AR 3D Manager</button>
   </div>
 
-  <!-- HISTORY & BENEFITS CONTENT MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Historia na Faida</span>
-  <h2 class="section-title">Ongeza Kipengele kwenye Historia/Faida</h2>
+  <!-- TAB 1: DASHBOARD MAIN CONTENT -->
+  <div id="dashboard" class="tab-content" style="display:block;">
+      <!-- MAONI YA WATUMIAJI -->
+      <span class="section-eyebrow" style="margin-top:0;display:block">Maoni</span>
+      <h2 class="section-title">Maoni ya Watumiaji kwenye Makala</h2>
+      <div class="quiz-box" style="margin-bottom:10px">
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="loadAllComments()" style="flex:1">Onyesha Maoni Yote</button>
+          <button class="btn btn-secondary" onclick="exportComments()" style="flex:1;color:var(--blue);border-color:var(--blue)">📥 Pakua CSV</button>
+        </div>
+        <p style="font-size:0.82rem;color:#888">Maoni (<span id="commentsCount">0</span>)</p>
+      </div>
+      <div class="download-list" id="commentsList" style="margin-bottom:30px"></div>
 
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="contentBlockForm" onsubmit="return handleAddContentBlock(event)">
-      <div class="field">
-        <label>Ukurasa</label>
-        <select id="cbPage" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
-          <option value="history">Historia</option>
-          <option value="benefits">Faida</option>
-        </select>
+      <!-- DOWNLOAD ACTIVITIES / ANALYTICS -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Utafiti</span>
+      <h2 class="section-title">Pakua Taarifa za Shughuli (Analytics)</h2>
+      <div class="quiz-box" style="margin-bottom:30px">
+        <p style="font-size:0.9rem;color:#444;margin-bottom:14px">Pakua taarifa kamili kuhusu jinsi tovuti inavyotumiwa.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-primary" onclick="exportActivity('pageViews')">📊 Idadi ya Maoni ya Kurasa (CSV)</button>
+          <button class="btn btn-primary" onclick="exportActivity('users')">👥 Taarifa za Watumiaji (CSV)</button>
+          <button class="btn btn-primary" onclick="exportActivity('quizScores')">🧠 Matokeo ya Quiz (CSV)</button>
+          <button class="btn btn-primary" onclick="exportActivity('articles')">📰 Takwimu za Makala (CSV)</button>
+        </div>
+        <p id="exportMsg" style="margin-top:12px;color:var(--green);font-size:0.85rem;display:none"></p>
       </div>
-      <div class="field">
-        <label>Emoji/Icon</label>
-        <input type="text" id="cbIcon" placeholder="📜" value="📜">
+
+      <!-- HISTORY & BENEFITS CONTENT MANAGEMENT -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Historia na Faida</span>
+      <h2 class="section-title">Ongeza Kipengele kwenye Historia/Faida</h2>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="contentBlockForm" onsubmit="return handleAddContentBlock(event)">
+          <div class="field">
+            <label>Ukurasa</label>
+            <select id="cbPage" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+              <option value="history">Historia</option>
+              <option value="benefits">Faida</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Emoji/Icon</label>
+            <input type="text" id="cbIcon" placeholder="📜" value="📜">
+          </div>
+          <div class="field">
+            <label>Kichwa</label>
+            <input type="text" id="cbTitle" required placeholder="Mfano: Tukio Maalum">
+          </div>
+          <div class="field">
+            <label>Maelezo</label>
+            <textarea id="cbText" required rows="3" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Ongeza Kipengele</button>
+          <p id="cbMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
       </div>
-      <div class="field">
-        <label>Kichwa</label>
-        <input type="text" id="cbTitle" required placeholder="Mfano: Tukio Maalum">
+
+      <h3 style="margin-bottom:12px">Vipengele Vilivyopo (<span id="cbCount">0</span>)</h3>
+      <div class="download-list" id="cbList" style="margin-bottom:30px"></div>
+
+      <!-- QUIZ SETTINGS -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Mipangilio ya Quiz</span>
+      <h2 class="section-title">Kigezo cha Kupata Cheti</h2>
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="certSettingsForm" onsubmit="return handleSetCertThreshold(event)">
+          <div class="field">
+            <label>Asilimia ya Chini Kupata Cheti (%)</label>
+            <input type="number" id="certThreshold" min="0" max="100" value="60" required>
+            <p style="font-size:0.78rem;color:#888;margin-top:5px">Mtu anapaswa kupata asilimia hii au zaidi ya maswali ili apate "Pakua Cheti".</p>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Hifadhi Kigezo</button>
+          <p id="certSettingsMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
       </div>
-      <div class="field">
-        <label>Maelezo</label>
-        <textarea id="cbText" required rows="3" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea>
+
+      <!-- MASWALI YA QUIZ -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Maswali ya Quiz</span>
+      <h2 class="section-title">Ongeza Swali Jipya</h2>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="questionForm" onsubmit="return handleAddQuestion(event)">
+          <div class="field">
+            <label>Swali</label>
+            <input type="text" id="qText" required placeholder="Andika swali hapa">
+          </div>
+          <div class="field">
+            <label>Chaguo A</label>
+            <input type="text" id="optA" required>
+          </div>
+          <div class="field">
+            <label>Chaguo B</label>
+            <input type="text" id="optB" required>
+          </div>
+          <div class="field">
+            <label>Chaguo C</label>
+            <input type="text" id="optC" required>
+          </div>
+          <div class="field">
+            <label>Chaguo D</label>
+            <input type="text" id="optD" required>
+          </div>
+          <div class="field">
+            <label>Jibu Sahihi</label>
+            <select id="correctAnswer" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+              <option value="0">A</option>
+              <option value="1">B</option>
+              <option value="2">C</option>
+              <option value="3">D</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Ongeza Swali</button>
+          <p id="qMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
       </div>
-      <button type="submit" class="btn btn-primary btn-block">Ongeza Kipengele</button>
-      <p id="cbMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
+
+      <h3 style="margin-bottom:12px">Maswali Yaliyopo (<span id="qCount">0</span>)</h3>
+      <div class="download-list" id="questionList"></div>
+
+      <!-- SOCIAL ACCOUNTS -->
+      <span class="section-eyebrow" style="margin-top:0;display:block">Mitandao ya Kijamii</span>
+      <h2 class="section-title">Akaunti za Mitandao (Footer)</h2>
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="socialForm" onsubmit="return handleSetSocial(event)">
+          <div class="field"><label>📘 Facebook URL</label><input type="url" id="socialFb" placeholder="https://facebook.com/ukurasa-wako"></div>
+          <div class="field"><label>📸 Instagram URL</label><input type="url" id="socialIg" placeholder="https://instagram.com/akaunti-yako"></div>
+          <div class="field"><label>🐦 Twitter/X URL</label><input type="url" id="socialTw" placeholder="https://twitter.com/akaunti-yako"></div>
+          <div class="field"><label>▶️ YouTube URL</label><input type="url" id="socialYt" placeholder="https://youtube.com/channel/..."></div>
+          <button type="submit" class="btn btn-primary btn-block">Hifadhi Mitandao</button>
+          <p id="socialMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Arifa</span>
+      <h2 class="section-title">Tuma Arifa kwa Watumiaji</h2>
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="notifForm" onsubmit="return handleSendNotif(event)">
+          <div class="field"><label>Kichwa cha Arifa</label><input type="text" id="notifTitle" required placeholder="Mfano: Makala Mpya Imeandikwa!"></div>
+          <div class="field"><label>Ujumbe</label><textarea id="notifBody" required rows="2" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea></div>
+          <div class="field"><label>Link (hiari)</label><input type="text" id="notifLink" placeholder="Mfano: makala.html"></div>
+          <button type="submit" class="btn btn-primary btn-block">Tuma Arifa</button>
+          <p id="notifMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eee">
+          <h4 style="margin-bottom:10px;font-size:0.95rem">Arifa Zilizotumwa (<span id="notifCount">0</span>)</h4>
+          <div class="download-list" id="notifList"></div>
+        </div>
+      </div>
+
+      <!-- DATE RANGE REPORTS -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Taarifa za Muda</span>
+      <h2 class="section-title">Pakua Taarifa kulingana na Muda</h2>
+      <div class="quiz-box" style="margin-bottom:30px">
+        <div class="field">
+          <label>Chagua Kipindi</label>
+          <select id="reportPeriod" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+            <option value="today">Leo</option>
+            <option value="week">Wiki hii (siku 7)</option>
+            <option value="month">Mwezi huu (siku 30)</option>
+            <option value="year">Mwaka huu (siku 365)</option>
+            <option value="all">Yote</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Aina ya Taarifa</label>
+          <select id="reportType" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+            <option value="users">Watumiaji Waliojiunga</option>
+            <option value="quizScores">Matokeo ya Quiz</option>
+            <option value="comments">Maoni</option>
+            <option value="articles">Makala</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="exportDateRangeReport()">📥 Pakua Taarifa (CSV)</button>
+        <p id="dateReportMsg" style="margin-top:10px;color:var(--green);font-size:0.85rem;display:none"></p>
+      </div>
+
+      <!-- BRANDING: LOGO & COLORS -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Branding</span>
+      <h2 class="section-title">Logo na Rangi za Tovuti</h2>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="logoForm" onsubmit="return handleSetLogo(event)">
+          <div class="field">
+            <label>Link ya Logo (picha, hiari)</label>
+            <input type="url" id="logoUrl" placeholder="https://i.imgur.com/xxxxx.png">
+            <p style="font-size:0.78rem;color:#888;margin-top:5px">Acha tupu kuendelea kutumia logo ya maandishi "UNIONHUB TZ".</p>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button type="submit" class="btn btn-primary" style="flex:1">Weka Logo</button>
+            <button type="button" class="btn btn-secondary" style="flex:1;color:#c0392b;border-color:#c0392b" onclick="removeLogo()">Futa Logo</button>
+          </div>
+          <p id="logoMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="themeForm" onsubmit="return handleSetTheme(event)">
+          <p style="font-weight:600;margin-bottom:14px">Rangi za Hero Section (Ukurasa wa Mwanzo)</p>
+          <div class="field">
+            <label>Rangi ya Kwanza</label>
+            <input type="color" id="heroColor1" value="#0d1310" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
+          </div>
+          <div class="field">
+            <label>Rangi ya Kati</label>
+            <input type="color" id="heroColor2" value="#1b7a3d" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
+          </div>
+          <div class="field">
+            <label>Rangi ya Mwisho</label>
+            <input type="color" id="heroColor3" value="#1c6fa5" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Badilisha Rangi za Hero</button>
+          <p id="themeMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <!-- USERS / ANALYTICS -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Watumiaji</span>
+      <h2 class="section-title">Shughuli za Watumiaji</h2>
+      <div class="quiz-box" style="margin-bottom:30px">
+        <h3 style="margin-bottom:12px;font-size:1rem">Walioingia Mwisho (<span id="userCount">0</span>)</h3>
+        <div class="download-list" id="userActivityList"></div>
+      </div>
+      <div class="quiz-box" style="margin-bottom:30px">
+        <h3 style="margin-bottom:12px;font-size:1rem">Makala Zilizosomwa Zaidi</h3>
+        <div class="download-list" id="articleViewsList"></div>
+      </div>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <h3 style="margin-bottom:12px;font-size:1rem">Idadi ya Watu Walioona Kila Ukurasa</h3>
+        <div class="download-list" id="pageViewsList"></div>
+      </div>
+
+      <!-- CHATBOT FAQ MANAGEMENT -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Chatbot</span>
+      <h2 class="section-title">Ongeza Swali/Jibu kwa Chatbot</h2>
+      <p class="section-lead">Andika maneno muhimu (keywords) yatakayomfanya chatbot atambue swali, kisha jibu lake.</p>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="faqForm" onsubmit="return handleAddFAQ(event)">
+          <div class="field">
+            <label>Maneno Muhimu (yagawanye kwa comma)</label>
+            <input type="text" id="faqKeywords" required placeholder="Mfano: ada, gharama, malipo">
+          </div>
+          <div class="field">
+            <label>Jibu kwa Kiswahili</label>
+            <textarea id="faqAnswerSw" required rows="3" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea>
+          </div>
+          <div class="field">
+            <label>Jibu kwa English (hiari)</label>
+            <textarea id="faqAnswerEn" rows="3" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Ongeza kwenye Chatbot</button>
+          <p id="faqMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Maswali ya Chatbot (<span id="faqCount">0</span>)</h3>
+      <div class="download-list" id="faqList" style="margin-bottom:30px"></div>
+
+      <!-- ARTICLES / MAKALA MANAGEMENT -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Makala</span>
+      <h2 class="section-title">Andika Makala/Habari Mpya</h2>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="articleForm" onsubmit="return handleAddArticle(event)">
+          <div class="field">
+            <label>Kichwa cha Habari (Title)</label>
+            <input type="text" id="artTitle" required placeholder="Mfano: Maadhimisho ya Miaka 62 ya Muungano">
+          </div>
+          <div class="field">
+            <label>Link ya Picha (hiari)</label>
+            <input type="url" id="artImage" placeholder="https://i.imgur.com/xxxxx.jpg">
+          </div>
+          <div class="field">
+            <label>Link ya PDF (hiari)</label>
+            <input type="url" id="artPdf" placeholder="https://drive.google.com/...">
+            <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia PDF kwenye Google Drive (bure), bonyeza "Share" → "Anyone with link" → nakili link hapa.</p>
+          </div>
+          <div class="field">
+            <label>Maudhui ya Makala</label>
+            <textarea id="artBody" required rows="8" placeholder="Andika makala yako hapa..." style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.95rem"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Chapisha Makala</button>
+          <p id="artMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Makala Zilizopo (<span id="artCount">0</span>)</h3>
+      <div class="download-list" id="articleList" style="margin-bottom:30px"></div>
+
+      <!-- DASHBOARD ITEMS MANAGEMENT -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Dashboard</span>
+      <h2 class="section-title">Ongeza/Punguza Vipengele vya Dashboard</h2>
+      <p class="section-lead">Hizi link/cards zinaonekana kwenye Dashboard ya mtumiaji, chini ya Download Centre.</p>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="dashItemForm" onsubmit="return handleAddDashItem(event)">
+          <div class="field">
+            <label>Emoji/Icon</label>
+            <input type="text" id="dashIcon" placeholder="🔗" value="🔗">
+          </div>
+          <div class="field">
+            <label>Jina la Kipengele</label>
+            <input type="text" id="dashLabel" required placeholder="Mfano: Kalenda ya Matukio">
+          </div>
+          <div class="field">
+            <label>Link (URL/faili)</label>
+            <input type="text" id="dashUrl" required placeholder="Mfano: makala.html">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Ongeza kwenye Dashboard</button>
+          <p id="dashItemMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Vipengele Vilivyopo (<span id="dashItemCount">0</span>)</h3>
+      <div class="download-list" id="dashItemList" style="margin-bottom:30px"></div>
+
+      <!-- NAVIGATION MENU MANAGEMENT -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Menu</span>
+      <h2 class="section-title">Ongeza/Punguza Link za Menu</h2>
+      <p class="section-lead">Hizi ni link za ziada zinazoongezwa kwenye menu ya juu (Home, Quiz, Historia zinabaki kila wakati).</p>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="navForm" onsubmit="return handleAddNavItem(event)">
+          <div class="field">
+            <label>Jina la Link (Label)</label>
+            <input type="text" id="navLabel" required placeholder="Mfano: Mawasiliano">
+          </div>
+          <div class="field">
+            <label>Ukurasa (URL/faili)</label>
+            <input type="text" id="navUrl" required placeholder="Mfano: contact.html au https://...">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Ongeza kwenye Menu</button>
+          <p id="navMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Link Zilizopo (<span id="navCount">0</span>)</h3>
+      <div class="download-list" id="navList" style="margin-bottom:30px"></div>
+
+      <!-- DOWNLOAD CENTRE MANAGEMENT -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Dashboard</span>
+      <h2 class="section-title">Simamia Download Centre</h2>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="downloadForm" onsubmit="return handleAddDownload(event)">
+          <div class="field">
+            <label>Jina la Nyaraka</label>
+            <input type="text" id="dlTitle" required placeholder="Mfano: Ripoti ya Utafiti 2026">
+          </div>
+          <div class="field">
+            <label>Emoji/Icon (hiari)</label>
+            <input type="text" id="dlIcon" placeholder="📄" value="📄">
+          </div>
+          <div class="field">
+            <label>Link ya Faili (URL)</label>
+            <input type="url" id="dlUrl" required placeholder="https://drive.google.com/file/d/... au link nyingine">
+            <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia PDF kwenye <strong>Google Drive</strong> → Share → "Anyone with link" → Nakili link hapa.</p>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="dlBtn">Ongeza kwenye Download Centre</button>
+          <p id="dlMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Nyaraka Zilizopo (<span id="dlCount">0</span>)</h3>
+      <div class="download-list" id="dlList" style="margin-bottom:30px"></div>
+
+      <!-- VIDEO MANAGEMENT -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Video za Elimu</span>
+      <h2 class="section-title">Ongeza Video Mpya</h2>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="videoForm" onsubmit="return handleSetVideo(event)">
+          <div class="field">
+            <label>Jina la Video</label>
+            <input type="text" id="videoTitle" required placeholder="Mfano: Historia ya Muungano - Sehemu ya 1">
+          </div>
+          <div class="field">
+            <label>Link ya YouTube</label>
+            <input type="text" id="videoUrl" required placeholder="https://www.youtube.com/watch?v=...">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Ongeza Video</button>
+          <p id="videoMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Video Zilizopo (<span id="videoCount">0</span>)</h3>
+      <div class="download-list" id="videoList" style="margin-bottom:30px"></div>
+
+      <!-- SITE IMAGES (Front Page) -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Picha za Kurasa</span>
+      <h2 class="section-title">Picha za Background</h2>
+
+      <div style="background:#fff7e6;border:1px solid #f2c14e;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:0.85rem;color:#7a5d00">
+        💡 <strong>Jinsi ya kupata link ya picha:</strong><br>
+        1. Nenda <strong>imgur.com</strong> → bonyeza "New post" → weka picha yako<br>
+        2. Baada ya kupakia, bonyeza picha kubwa → bonyeza kulia → "Copy image address"<br>
+        3. Bandika link hiyo hapa chini (lazima iishe na <code>.jpg</code> au <code>.png</code>)<br>
+        Au tumia link ya picha yoyote ya mtandaoni.
+      </div>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="siteImageForm" onsubmit="return handleSiteImageUpload(event)">
+          <div class="field">
+            <label>Chagua Sehemu</label>
+            <select id="imgSlot" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
+              <option value="hero_bg">🏠 Hero — Background ya Ukurasa wa Mwanzo</option>
+              <option value="history_img">📖 Historia — Picha ya Sehemu ya Historia</option>
+              <option value="benefits_img">✅ Faida — Picha ya Sehemu ya Faida</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Link ya Picha (URL)</label>
+            <input type="url" id="siteImgUrl" placeholder="https://i.imgur.com/xxxxx.jpg">
+            <p style="font-size:0.78rem;color:#888;margin-top:5px">
+              Acha tupu na bonyeza "Futa Picha" kuondoa picha iliyopo na kurudi kwa rangi za kawaida.
+            </p>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button type="submit" class="btn btn-primary" style="flex:1">✅ Weka Picha</button>
+            <button type="button" class="btn btn-secondary" style="flex:1;color:#c0392b;border-color:#c0392b" onclick="removeSiteImage()">🗑️ Futa Picha</button>
+          </div>
+          <p id="siteImgMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Picha Zilizowekwa Sasa</h3>
+      <div class="card-grid" id="siteImagesPreview"></div>
+
+      <!-- UPLOAD IMAGE -->
+      <span class="section-eyebrow" style="margin-top:40px;display:block">Picha</span>
+      <h2 class="section-title">Pakia Picha</h2>
+
+      <div class="quiz-box" style="margin-bottom:30px">
+        <form id="imageForm" onsubmit="return handleUploadImage(event)">
+          <div class="field">
+            <label>Jina la Picha (label)</label>
+            <input type="text" id="imgLabel" required placeholder="Mfano: Picha ya Nyerere na Karume">
+          </div>
+          <div class="field">
+            <label>Link ya Picha (URL)</label>
+            <input type="url" id="imgUrl" required placeholder="https://i.imgur.com/xxxxx.jpg">
+            <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia picha kwenye <a href="https://imgur.com" target="_blank" style="color:var(--blue)">imgur.com</a> (bure, hauhitaji akaunti), kisha nakili link ya picha hapa.</p>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="uploadBtn">Ongeza Picha</button>
+          <p id="imgMsg" style="margin-top:10px;color:var(--green);display:none"></p>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:12px">Picha Zilizopakiwa (<span id="imgCount">0</span>)</h3>
+      <div class="card-grid" id="imageGallery"></div>
   </div>
 
-  <h3 style="margin-bottom:12px">Vipengele Vilivyopo (<span id="cbCount">0</span>)</h3>
-  <div class="download-list" id="cbList" style="margin-bottom:30px"></div>
-
-  <!-- QUIZ SETTINGS -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Mipangilio ya Quiz</span>
-  <h2 class="section-title">Kigezo cha Kupata Cheti</h2>
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="certSettingsForm" onsubmit="return handleSetCertThreshold(event)">
-      <div class="field">
-        <label>Asilimia ya Chini Kupata Cheti (%)</label>
-        <input type="number" id="certThreshold" min="0" max="100" value="60" required>
-        <p style="font-size:0.78rem;color:#888;margin-top:5px">Mtu anapaswa kupata asilimia hii au zaidi ya maswali ili apate "Pakua Cheti".</p>
+  <!-- TAB 2: TIME MACHINE -->
+  <div id="timeline" class="tab-content" style="display:none;">
+      <div class="admin-card">
+          <h3>🚀 Ongeza Tukio la Time Machine</h3>
+          <div class="form-grid">
+              <input type="number" id="tmYear" placeholder="Mwaka (mf. 1964)">
+              <input type="text" id="tmTitle" placeholder="Kichwa cha Habari">
+              <textarea id="tmDesc" placeholder="Maelezo ya tukio..." rows="4"></textarea>
+              <input type="text" id="tmImg" placeholder="Link ya Picha">
+              <input type="text" id="tmVid" placeholder="Link ya Video (YouTube)">
+          </div>
+          <button class="btn-save" onclick="saveToTM()">Hifadhi Historia</button>
       </div>
-      <button type="submit" class="btn btn-primary btn-block">Hifadhi Kigezo</button>
-      <p id="certSettingsMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
   </div>
 
-  <!-- MASWALI YA QUIZ -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Maswali ya Quiz</span>
-  <h2 class="section-title">Ongeza Swali Jipya</h2>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="questionForm" onsubmit="return handleAddQuestion(event)">
-      <div class="field">
-        <label>Swali</label>
-        <input type="text" id="qText" required placeholder="Andika swali hapa">
+  <!-- TAB 3: AR 3D MANAGER -->
+  <div id="ar" class="tab-content" style="display:none;">
+      <div class="admin-card">
+          <h3>🔮 Dhibiti AR Content</h3>
+          <div class="form-grid">
+              <input type="text" id="arTitle" placeholder="Jina la Model (mf. Mwenge)">
+              <input type="text" id="arModelUrl" placeholder="Link ya File la 3D (.glb)">
+              <input type="text" id="arHistoryImg" placeholder="Link ya Picha ya Historia">
+              <textarea id="arFullDesc" placeholder="Maelezo ya kina ya kihistoria..." rows="4"></textarea>
+          </div>
+          <button class="btn-save" onclick="saveToAR()">Hifadhi AR Model</button>
       </div>
-      <div class="field">
-        <label>Chaguo A</label>
-        <input type="text" id="optA" required>
-      </div>
-      <div class="field">
-        <label>Chaguo B</label>
-        <input type="text" id="optB" required>
-      </div>
-      <div class="field">
-        <label>Chaguo C</label>
-        <input type="text" id="optC" required>
-      </div>
-      <div class="field">
-        <label>Chaguo D</label>
-        <input type="text" id="optD" required>
-      </div>
-      <div class="field">
-        <label>Jibu Sahihi</label>
-        <select id="correctAnswer" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
-          <option value="0">A</option>
-          <option value="1">B</option>
-          <option value="2">C</option>
-          <option value="3">D</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Ongeza Swali</button>
-      <p id="qMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
   </div>
-
-  <h3 style="margin-bottom:12px">Maswali Yaliyopo (<span id="qCount">0</span>)</h3>
-  <div class="download-list" id="questionList"></div>
-
-  <!-- SOCIAL ACCOUNTS -->
-  <span class="section-eyebrow" style="margin-top:0;display:block">Mitandao ya Kijamii</span>
-  <h2 class="section-title">Akaunti za Mitandao (Footer)</h2>
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="socialForm" onsubmit="return handleSetSocial(event)">
-      <div class="field"><label>📘 Facebook URL</label><input type="url" id="socialFb" placeholder="https://facebook.com/ukurasa-wako"></div>
-      <div class="field"><label>📸 Instagram URL</label><input type="url" id="socialIg" placeholder="https://instagram.com/akaunti-yako"></div>
-      <div class="field"><label>🐦 Twitter/X URL</label><input type="url" id="socialTw" placeholder="https://twitter.com/akaunti-yako"></div>
-      <div class="field"><label>▶️ YouTube URL</label><input type="url" id="socialYt" placeholder="https://youtube.com/channel/..."></div>
-      <button type="submit" class="btn btn-primary btn-block">Hifadhi Mitandao</button>
-      <p id="socialMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <!-- NOTIFICATIONS -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Arifa</span>
-  <h2 class="section-title">Tuma Arifa kwa Watumiaji</h2>
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="notifForm" onsubmit="return handleSendNotif(event)">
-      <div class="field"><label>Kichwa cha Arifa</label><input type="text" id="notifTitle" required placeholder="Mfano: Makala Mpya Imeandikwa!"></div>
-      <div class="field"><label>Ujumbe</label><textarea id="notifBody" required rows="2" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea></div>
-      <div class="field"><label>Link (hiari)</label><input type="text" id="notifLink" placeholder="Mfano: makala.html"></div>
-      <button type="submit" class="btn btn-primary btn-block">Tuma Arifa</button>
-      <p id="notifMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-    <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eee">
-      <h4 style="margin-bottom:10px;font-size:0.95rem">Arifa Zilizotumwa (<span id="notifCount">0</span>)</h4>
-      <div class="download-list" id="notifList"></div>
-    </div>
-  </div>
-
-  <!-- DATE RANGE REPORTS -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Taarifa za Muda</span>
-  <h2 class="section-title">Pakua Taarifa kulingana na Muda</h2>
-  <div class="quiz-box" style="margin-bottom:30px">
-    <div class="field">
-      <label>Chagua Kipindi</label>
-      <select id="reportPeriod" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
-        <option value="today">Leo</option>
-        <option value="week">Wiki hii (siku 7)</option>
-        <option value="month">Mwezi huu (siku 30)</option>
-        <option value="year">Mwaka huu (siku 365)</option>
-        <option value="all">Yote</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Aina ya Taarifa</label>
-      <select id="reportType" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
-        <option value="users">Watumiaji Waliojiunga</option>
-        <option value="quizScores">Matokeo ya Quiz</option>
-        <option value="comments">Maoni</option>
-        <option value="articles">Makala</option>
-      </select>
-    </div>
-    <button class="btn btn-primary btn-block" onclick="exportDateRangeReport()">📥 Pakua Taarifa (CSV)</button>
-    <p id="dateReportMsg" style="margin-top:10px;color:var(--green);font-size:0.85rem;display:none"></p>
-  </div>
-
-  <!-- BRANDING: LOGO & COLORS -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Branding</span>
-  <h2 class="section-title">Logo na Rangi za Tovuti</h2>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="logoForm" onsubmit="return handleSetLogo(event)">
-      <div class="field">
-        <label>Link ya Logo (picha, hiari)</label>
-        <input type="url" id="logoUrl" placeholder="https://i.imgur.com/xxxxx.png">
-        <p style="font-size:0.78rem;color:#888;margin-top:5px">Acha tupu kuendelea kutumia logo ya maandishi "UNIONHUB TZ".</p>
-      </div>
-      <div style="display:flex;gap:10px">
-        <button type="submit" class="btn btn-primary" style="flex:1">Weka Logo</button>
-        <button type="button" class="btn btn-secondary" style="flex:1;color:#c0392b;border-color:#c0392b" onclick="removeLogo()">Futa Logo</button>
-      </div>
-      <p id="logoMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="themeForm" onsubmit="return handleSetTheme(event)">
-      <p style="font-weight:600;margin-bottom:14px">Rangi za Hero Section (Ukurasa wa Mwanzo)</p>
-      <div class="field">
-        <label>Rangi ya Kwanza</label>
-        <input type="color" id="heroColor1" value="#0d1310" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
-      </div>
-      <div class="field">
-        <label>Rangi ya Kati</label>
-        <input type="color" id="heroColor2" value="#1b7a3d" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
-      </div>
-      <div class="field">
-        <label>Rangi ya Mwisho</label>
-        <input type="color" id="heroColor3" value="#1c6fa5" style="width:100%;height:44px;border-radius:8px;border:1.5px solid #ddd">
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Badilisha Rangi za Hero</button>
-      <p id="themeMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <!-- USERS / ANALYTICS -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Watumiaji</span>
-  <h2 class="section-title">Shughuli za Watumiaji</h2>
-  <div class="quiz-box" style="margin-bottom:30px">
-    <h3 style="margin-bottom:12px;font-size:1rem">Walioingia Mwisho (<span id="userCount">0</span>)</h3>
-    <div class="download-list" id="userActivityList"></div>
-  </div>
-  <div class="quiz-box" style="margin-bottom:30px">
-    <h3 style="margin-bottom:12px;font-size:1rem">Makala Zilizosomwa Zaidi</h3>
-    <div class="download-list" id="articleViewsList"></div>
-  </div>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <h3 style="margin-bottom:12px;font-size:1rem">Idadi ya Watu Walioona Kila Ukurasa</h3>
-    <div class="download-list" id="pageViewsList"></div>
-  </div>
-
-  <!-- CHATBOT FAQ MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Chatbot</span>
-  <h2 class="section-title">Ongeza Swali/Jibu kwa Chatbot</h2>
-  <p class="section-lead">Andika maneno muhimu (keywords) yatakayomfanya chatbot atambue swali, kisha jibu lake.</p>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="faqForm" onsubmit="return handleAddFAQ(event)">
-      <div class="field">
-        <label>Maneno Muhimu (yagawanye kwa comma)</label>
-        <input type="text" id="faqKeywords" required placeholder="Mfano: ada, gharama, malipo">
-      </div>
-      <div class="field">
-        <label>Jibu kwa Kiswahili</label>
-        <textarea id="faqAnswerSw" required rows="3" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea>
-      </div>
-      <div class="field">
-        <label>Jibu kwa English (hiari)</label>
-        <textarea id="faqAnswerEn" rows="3" style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Ongeza kwenye Chatbot</button>
-      <p id="faqMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Maswali ya Chatbot (<span id="faqCount">0</span>)</h3>
-  <div class="download-list" id="faqList" style="margin-bottom:30px"></div>
-
-  <!-- ARTICLES / MAKALA MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Makala</span>
-  <h2 class="section-title">Andika Makala/Habari Mpya</h2>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="articleForm" onsubmit="return handleAddArticle(event)">
-      <div class="field">
-        <label>Kichwa cha Habari (Title)</label>
-        <input type="text" id="artTitle" required placeholder="Mfano: Maadhimisho ya Miaka 62 ya Muungano">
-      </div>
-      <div class="field">
-        <label>Link ya Picha (hiari)</label>
-        <input type="url" id="artImage" placeholder="https://i.imgur.com/xxxxx.jpg">
-      </div>
-      <div class="field">
-        <label>Link ya PDF (hiari)</label>
-        <input type="url" id="artPdf" placeholder="https://drive.google.com/...">
-        <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia PDF kwenye Google Drive (bure), bonyeza "Share" → "Anyone with link" → nakili link hapa.</p>
-      </div>
-      <div class="field">
-        <label>Maudhui ya Makala</label>
-        <textarea id="artBody" required rows="8" placeholder="Andika makala yako hapa..." style="width:100%;padding:11px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:0.95rem"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Chapisha Makala</button>
-      <p id="artMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Makala Zilizopo (<span id="artCount">0</span>)</h3>
-  <div class="download-list" id="articleList" style="margin-bottom:30px"></div>
-
-  <!-- DASHBOARD ITEMS MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Dashboard</span>
-  <h2 class="section-title">Ongeza/Punguza Vipengele vya Dashboard</h2>
-  <p class="section-lead">Hizi link/cards zinaonekana kwenye Dashboard ya mtumiaji, chini ya Download Centre.</p>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="dashItemForm" onsubmit="return handleAddDashItem(event)">
-      <div class="field">
-        <label>Emoji/Icon</label>
-        <input type="text" id="dashIcon" placeholder="🔗" value="🔗">
-      </div>
-      <div class="field">
-        <label>Jina la Kipengele</label>
-        <input type="text" id="dashLabel" required placeholder="Mfano: Kalenda ya Matukio">
-      </div>
-      <div class="field">
-        <label>Link (URL/faili)</label>
-        <input type="text" id="dashUrl" required placeholder="Mfano: makala.html">
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Ongeza kwenye Dashboard</button>
-      <p id="dashItemMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Vipengele Vilivyopo (<span id="dashItemCount">0</span>)</h3>
-  <div class="download-list" id="dashItemList" style="margin-bottom:30px"></div>
-
-  <!-- NAVIGATION MENU MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Menu</span>
-  <h2 class="section-title">Ongeza/Punguza Link za Menu</h2>
-  <p class="section-lead">Hizi ni link za ziada zinazoongezwa kwenye menu ya juu (Home, Quiz, Historia zinabaki kila wakati).</p>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="navForm" onsubmit="return handleAddNavItem(event)">
-      <div class="field">
-        <label>Jina la Link (Label)</label>
-        <input type="text" id="navLabel" required placeholder="Mfano: Mawasiliano">
-      </div>
-      <div class="field">
-        <label>Ukurasa (URL/faili)</label>
-        <input type="text" id="navUrl" required placeholder="Mfano: contact.html au https://...">
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Ongeza kwenye Menu</button>
-      <p id="navMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Link Zilizopo (<span id="navCount">0</span>)</h3>
-  <div class="download-list" id="navList" style="margin-bottom:30px"></div>
-
-  <!-- DOWNLOAD CENTRE MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Dashboard</span>
-  <h2 class="section-title">Simamia Download Centre</h2>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="downloadForm" onsubmit="return handleAddDownload(event)">
-      <div class="field">
-        <label>Jina la Nyaraka</label>
-        <input type="text" id="dlTitle" required placeholder="Mfano: Ripoti ya Utafiti 2026">
-      </div>
-      <div class="field">
-        <label>Emoji/Icon (hiari)</label>
-        <input type="text" id="dlIcon" placeholder="📄" value="📄">
-      </div>
-      <div class="field">
-        <label>Link ya Faili (URL)</label>
-        <input type="url" id="dlUrl" required placeholder="https://drive.google.com/file/d/... au link nyingine">
-        <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia PDF kwenye <strong>Google Drive</strong> → Share → "Anyone with link" → Nakili link hapa.</p>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block" id="dlBtn">Ongeza kwenye Download Centre</button>
-      <p id="dlMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Nyaraka Zilizopo (<span id="dlCount">0</span>)</h3>
-  <div class="download-list" id="dlList" style="margin-bottom:30px"></div>
-
-  <!-- VIDEO MANAGEMENT -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Video za Elimu</span>
-  <h2 class="section-title">Ongeza Video Mpya</h2>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="videoForm" onsubmit="return handleSetVideo(event)">
-      <div class="field">
-        <label>Jina la Video</label>
-        <input type="text" id="videoTitle" required placeholder="Mfano: Historia ya Muungano - Sehemu ya 1">
-      </div>
-      <div class="field">
-        <label>Link ya YouTube</label>
-        <input type="text" id="videoUrl" required placeholder="https://www.youtube.com/watch?v=...">
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Ongeza Video</button>
-      <p id="videoMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Video Zilizopo (<span id="videoCount">0</span>)</h3>
-  <div class="download-list" id="videoList" style="margin-bottom:30px"></div>
-
-  <!-- SITE IMAGES (Front Page) -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Picha za Kurasa</span>
-  <h2 class="section-title">Picha za Background</h2>
-
-  <div style="background:#fff7e6;border:1px solid #f2c14e;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:0.85rem;color:#7a5d00">
-    💡 <strong>Jinsi ya kupata link ya picha:</strong><br>
-    1. Nenda <strong>imgur.com</strong> → bonyeza "New post" → weka picha yako<br>
-    2. Baada ya kupakia, bonyeza picha kubwa → bonyeza kulia → "Copy image address"<br>
-    3. Bandika link hiyo hapa chini (lazima iishe na <code>.jpg</code> au <code>.png</code>)<br>
-    Au tumia link ya picha yoyote ya mtandaoni.
-  </div>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="siteImageForm" onsubmit="return handleSiteImageUpload(event)">
-      <div class="field">
-        <label>Chagua Sehemu</label>
-        <select id="imgSlot" style="width:100%;padding:11px;border-radius:8px;border:1.5px solid #ddd">
-          <option value="hero_bg">🏠 Hero — Background ya Ukurasa wa Mwanzo</option>
-          <option value="history_img">📖 Historia — Picha ya Sehemu ya Historia</option>
-          <option value="benefits_img">✅ Faida — Picha ya Sehemu ya Faida</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Link ya Picha (URL)</label>
-        <input type="url" id="siteImgUrl" placeholder="https://i.imgur.com/xxxxx.jpg">
-        <p style="font-size:0.78rem;color:#888;margin-top:5px">
-          Acha tupu na bonyeza "Futa Picha" kuondoa picha iliyopo na kurudi kwa rangi za kawaida.
-        </p>
-      </div>
-      <div style="display:flex;gap:10px">
-        <button type="submit" class="btn btn-primary" style="flex:1">✅ Weka Picha</button>
-        <button type="button" class="btn btn-secondary" style="flex:1;color:#c0392b;border-color:#c0392b" onclick="removeSiteImage()">🗑️ Futa Picha</button>
-      </div>
-      <p id="siteImgMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Picha Zilizowekwa Sasa</h3>
-  <div class="card-grid" id="siteImagesPreview"></div>
-
-  <!-- UPLOAD IMAGE -->
-  <span class="section-eyebrow" style="margin-top:40px;display:block">Picha</span>
-  <h2 class="section-title">Pakia Picha</h2>
-
-  <div class="quiz-box" style="margin-bottom:30px">
-    <form id="imageForm" onsubmit="return handleUploadImage(event)">
-      <div class="field">
-        <label>Jina la Picha (label)</label>
-        <input type="text" id="imgLabel" required placeholder="Mfano: Picha ya Nyerere na Karume">
-      </div>
-      <div class="field">
-        <label>Link ya Picha (URL)</label>
-        <input type="url" id="imgUrl" required placeholder="https://i.imgur.com/xxxxx.jpg">
-        <p style="font-size:0.78rem;color:#888;margin-top:5px">Pakia picha kwenye <a href="https://imgur.com" target="_blank" style="color:var(--blue)">imgur.com</a> (bure, hauhitaji akaunti), kisha nakili link ya picha hapa.</p>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block" id="uploadBtn">Ongeza Picha</button>
-      <p id="imgMsg" style="margin-top:10px;color:var(--green);display:none"></p>
-    </form>
-  </div>
-
-  <h3 style="margin-bottom:12px">Picha Zilizopakiwa (<span id="imgCount">0</span>)</h3>
-  <div class="card-grid" id="imageGallery"></div>
 </section>
 
 <footer>
@@ -512,6 +609,83 @@ requireAdmin(function(admin) {
   loadPageViews();
   loadAllComments();
 });
+
+/* -------- TAB NAVIGATION -------- */
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
+    tablinks = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+/* -------- TIME MACHINE & AR LOGIC -------- */
+async function saveToTM() {
+    const year = document.getElementById('tmYear').value;
+    const title = document.getElementById('tmTitle').value;
+    const description = document.getElementById('tmDesc').value;
+    const imageUrl = document.getElementById('tmImg').value;
+    const videoUrl = document.getElementById('tmVid').value;
+
+    if(!year || !title) {
+        alert('Tafadhali jaza angalau Mwaka na Kichwa cha Habari.');
+        return;
+    }
+
+    const data = {
+        year: parseInt(year),
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        videoUrl: videoUrl,
+        createdAt: new Date()
+    };
+
+    try {
+        await db.collection('timeline').add(data);
+        alert('Tukio la Time Machine limehifadhiwa kwa mafanikio!');
+        document.getElementById('tmYear').value = '';
+        document.getElementById('tmTitle').value = '';
+        document.getElementById('tmDesc').value = '';
+        document.getElementById('tmImg').value = '';
+        document.getElementById('tmVid').value = '';
+    } catch (err) {
+        alert('Hitilafu: ' + err.message);
+    }
+}
+
+async function saveToAR() {
+    const title = document.getElementById('arTitle').value;
+    const modelUrl = document.getElementById('arModelUrl').value;
+    const imageUrl = document.getElementById('arHistoryImg').value;
+    const description = document.getElementById('arFullDesc').value;
+
+    if(!title || !modelUrl) {
+        alert('Tafadhali jaza Jina la Model na Link ya File 3D.');
+        return;
+    }
+
+    const data = {
+        title: title,
+        modelUrl: modelUrl,
+        imageUrl: imageUrl,
+        description: description,
+        createdAt: new Date()
+    };
+
+    try {
+        await db.collection('ar_models').add(data);
+        alert('AR Content imehifadhiwa kwa mafanikio!');
+        document.getElementById('arTitle').value = '';
+        document.getElementById('arModelUrl').value = '';
+        document.getElementById('arHistoryImg').value = '';
+        document.getElementById('arFullDesc').value = '';
+    } catch (err) {
+        alert('Hitilafu: ' + err.message);
+    }
+}
 
 /* -------- SOCIAL ACCOUNTS -------- */
 async function handleSetSocial(e) {
@@ -1421,7 +1595,3 @@ async function deleteImage(docId) {
 </script>
 </body>
 </html>
-
-
-
-

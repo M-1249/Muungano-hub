@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Muungano Time Machine | Cinematic Experience</title>
+    <style>
+        :root {
+            --gold: #FFD700;
+            --blue: #2196F3;
+            --dark: #0a0a0a;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; }
+
+        /* 1. LANDING PAGE */
+        #landingPage {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            z-index: 10;
+            position: relative;
+        }
+
+        .gear-icon { font-size: 50px; animation: rotateGear 5s linear infinite; margin-bottom: 20px; }
+        @keyframes rotateGear { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .year-selector {
+            border: 2px solid var(--gold);
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 40px;
+            font-weight: 900;
+            color: var(--gold);
+            background: var(--glass);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .start-btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
+            transition: 0.3s;
+        }
+        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px var(--blue); }
+
+        /* 2. ANIMATION OVERLAY */
+        #travelOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .clock-anim {
+            width: 200px; height: 200px;
+            border: 5px solid var(--gold);
+            border-radius: 50%;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        .clock-hand {
+            position: absolute; top: 50%; left: 50%;
+            width: 80px; height: 4px; background: var(--gold);
+            transform-origin: left;
+            animation: spinHand 0.5s linear infinite;
+        }
+        @keyframes spinHand { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .map-glow {
+            width: 250px; opacity: 0;
+            animation: mapFlash 3s ease-in-out forwards;
+        }
+        @keyframes mapFlash { 
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 0.8; transform: scale(1.1); filter: brightness(2); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+
+        .fast-dates { font-size: 50px; color: var(--gold); font-weight: bold; }
+
+        /* 3. MAIN CONTENT */
+        #mainContent {
+            display: none;
+            height: 100vh;
+            padding: 40px;
+            overflow-y: auto;
+            background: #111;
+        }
+
+        .content-box { max-width: 900px; margin: 0 auto; }
+        .back-btn { background: none; border: 1px solid #444; color: #888; padding: 10px 20px; cursor: pointer; margin-bottom: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. LANDING PAGE -->
+    <div id="landingPage">
+        <div class="gear-icon">⚙️</div>
+        <div class="year-selector">
+            <select id="selectedYear" style="background:none; border:none; color:inherit; font-size:inherit; font-weight:inherit; cursor:pointer;">
+                <option value="1964">1964</option>
+                <option value="1977">1977</option>
+                <option value="1992">1992</option>
+                <option value="2026">2026</option>
+            </select>
+        </div>
+        <button class="start-btn" onclick="startTimeTravel()">🚀 START</button>
+    </div>
+
+    <!-- 2. TRAVEL ANIMATION -->
+    <div id="travelOverlay">
+        <div class="clock-anim">
+            <div class="clock-hand"></div>
+        </div>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Flag-map_of_Tanzania.svg/1200px-Flag-map_of_Tanzania.svg.png" class="map-glow" id="mapAnim">
+        <div class="fast-dates" id="dateCounter">1964</div>
+    </div>
+
+    <!-- 3. MAIN CONTENT -->
+    <div id="mainContent">
+        <div class="content-box">
+            <button class="back-btn" onclick="location.reload()">◀️ RUDI NYUMA</button>
+            <div id="eventDisplay"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script>
+        const db = firebase.firestore();
+
+        async function startTimeTravel() {
+            const year = document.getElementById('selectedYear').value;
+            const landing = document.getElementById('landingPage');
+            const overlay = document.getElementById('travelOverlay');
+            const counter = document.getElementById('dateCounter');
+
+            landing.style.display = 'none';
+            overlay.style.display = 'flex';
+
+            // Fast Date Counter Animation
+            let currentYear = 1961;
+            const interval = setInterval(() => {
+                currentYear++;
+                counter.innerText = currentYear;
+                if(currentYear >= parseInt(year)) clearInterval(interval);
+            }, 50);
+
+            // Wait 3 seconds for animation
+            setTimeout(async () => {
+                await loadEventData(year);
+                overlay.style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            }, 3000);
+        }
+
+        async function loadEventData(year) {
+            const snapshot = await db.collection('timeline_events').where('year', '==', parseInt(year)).get();
+            const display = document.getElementById('eventDisplay');
+            
+            if (snapshot.empty) {
+                display.innerHTML = `<h1>Mwaka ${year}</h1><p>Samahani, maudhui ya mwaka huu hayajapakiwa bado.</p>`;
+                return;
+            }
+
+            const event = snapshot.docs[0].data();
+            display.innerHTML = `
+                <h1 style="color:var(--gold); font-size:3rem;">📅 ${event.year}</h1>
+                <h2 style="font-size:2rem; margin-bottom:30px;">"${event.title}"</h2>
+                <div style="background:#222; padding:30px; border-radius:15px; border-left:5px solid var(--blue);">
+                    <p style="font-size:1.2rem; line-height:1.6;">${event.description}</p>
+                </div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:30px;">
+                    <div style="background:#1a1a1a; padding:20px; border-radius:10px;">
+                        <h3 style="color:var(--gold)">📜 Katiba</h3>
+                        <p>${event.constitution || 'Marekebisho ya serikali.'}</p>
+                    </div>
+                    <div style="background:#1a1a1a; padding:20px; border-radius:10px;">
+                        <h3 style="color:var(--gold)">👥 Viongozi</h3>
+                        <p>${event.leaders || 'Nyerere & Karume'}</p>
+                    </div>
+                </div>
+
+                <div style="margin-top:40px; display:flex; gap:15px; flex-wrap:wrap;">
+                    <button class="start-btn" style="padding:10px 25px; font-size:16px;">🖼️ Picha</button>
+                    <button class="start-btn" style="padding:10px 25px; font-size:16px; background:#444;">🎙️ Hotuba</button>
+                    <button class="start-btn" style="padding:10px 25px; font-size:16px; background:#444;">🎥 Video</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

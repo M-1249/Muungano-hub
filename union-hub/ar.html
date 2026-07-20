@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 AR 3D Experience | Muungano Hub</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .ar-hero { background: linear-gradient(135deg, #2196F3, #4CAF50); color: white; padding: 60px 20px; text-align: center; }
+        
+        .ar-grid { max-width: 1100px; margin: -40px auto 40px; padding: 0 20px; display: grid; grid-template-columns: 1fr; gap: 30px; }
+        
+        .ar-card-pro {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+        }
+
+        .ar-viewer-side { background: #eee; position: relative; height: 450px; }
+        model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+        
+        .ar-info-side { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+        .ar-info-side h2 { margin: 0 0 15px 0; color: #2196F3; font-size: 28px; }
+        .ar-info-side p { color: #555; line-height: 1.7; font-size: 16px; margin-bottom: 25px; }
+        
+        .history-img-preview {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 3px solid #f0f2f5;
+        }
+
+        .ar-badge-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+            transition: 0.3s;
+        }
+        .ar-badge-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4); }
+
+        @media (max-width: 850px) {
+            .ar-card-pro { grid-template-columns: 1fr; }
+            .ar-viewer-side { height: 350px; }
+            .ar-info-side { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ar-hero">
+        <h1>🔮 Muungano AR 3D Experience</h1>
+        <p>Gusa alama ya AR kuona historia ikijitokeza mbele yako</p>
+    </div>
+
+    <div class="ar-grid" id="arContainer">
+        <!-- Data itajazwa hapa na JS -->
+        <p style="text-align:center; padding:50px;">Inapakia ulimwengu wa AR...</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script>
+        const db = firebase.firestore();
+
+        async function loadAR() {
+            const container = document.getElementById('arContainer');
+            const snapshot = await db.collection('ar_models').get();
+            
+            if (snapshot.empty) {
+                container.innerHTML = '<p style="text-align:center">Bado hakuna models za AR zilizopakiwa.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                const card = document.createElement('div');
+                card.className = 'ar-card-pro';
+                
+                card.innerHTML = `
+                    <div class="ar-viewer-side">
+                        <model-viewer 
+                            src="${item.modelUrl}" 
+                            ar ar-modes="webxr scene-viewer quick-look" 
+                            camera-controls auto-rotate shadow-intensity="1">
+                            <button slot="ar-button" class="ar-badge-btn" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%);">
+                                👋 IWEKE SEBULENI KWAKO
+                            </button>
+                        </model-viewer>
+                    </div>
+                    <div class="ar-info-side">
+                        <img src="${item.imageUrl || 'https://via.placeholder.com/400x200'}" class="history-img-preview" alt="Picha ya Historia">
+                        <h2>${item.title}</h2>
+                        <p>${item.description}</p>
+                        <div style="display:flex; gap:10px;">
+                            <span style="background:#e3f2fd; color:#2196F3; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">HISTORIA</span>
+                            <span style="background:#e8f5e9; color:#4CAF50; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">3D MODEL</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.onload = loadAR;
+    </script>
+</body>
+</html>
