@@ -1,19 +1,21 @@
-headers]]
+[[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "SAMEORIGIN"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Permissions-Policy = "camera=(self), microphone=(), geolocation=()"
 
+# Elekeza /admin kwenda admin.html kwa urahisi
 [[redirects]]
   from = "/admin"
   to = "/admin.html"
-  status = 200
+  status = 301
 
+# Kurasa isiyopo ikipatikana (404 Page)
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
-  conditions = {Role = ["admin"]}
+  status = 404
+

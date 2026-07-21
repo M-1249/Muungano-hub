@@ -545,7 +545,7 @@
 
   <!-- TAB 2: TIME MACHINE -->
   <div id="timeline" class="tab-content" style="display:none;">
-      <div class="admin-card">
+      <div class="admin-card" style="margin-bottom:30px;">
           <h3>🚀 Ongeza Tukio la Time Machine</h3>
           <div class="form-grid">
               <input type="number" id="tmYear" placeholder="Mwaka (mf. 1964)">
@@ -556,11 +556,14 @@
           </div>
           <button class="btn-save" onclick="saveToTM()">Hifadhi Historia</button>
       </div>
+
+      <h3 style="margin-bottom:12px">Matukio ya Time Machine Yaliyopo (<span id="tmCount">0</span>)</h3>
+      <div class="download-list" id="tmList" style="margin-bottom:30px"></div>
   </div>
 
   <!-- TAB 3: AR 3D MANAGER -->
   <div id="ar" class="tab-content" style="display:none;">
-      <div class="admin-card">
+      <div class="admin-card" style="margin-bottom:30px;">
           <h3>🔮 Dhibiti AR Content</h3>
           <div class="form-grid">
               <input type="text" id="arTitle" placeholder="Jina la Model (mf. Mwenge)">
@@ -570,6 +573,9 @@
           </div>
           <button class="btn-save" onclick="saveToAR()">Hifadhi AR Model</button>
       </div>
+
+      <h3 style="margin-bottom:12px">AR Models Zilizopo (<span id="arCount">0</span>)</h3>
+      <div class="download-list" id="arList" style="margin-bottom:30px"></div>
   </div>
 </section>
 
@@ -608,6 +614,8 @@ requireAdmin(function(admin) {
   loadDashItemsList();
   loadPageViews();
   loadAllComments();
+  loadTMList();
+  loadARList();
 });
 
 /* -------- TAB NAVIGATION -------- */
@@ -621,7 +629,7 @@ function openTab(evt, tabName) {
     evt.currentTarget.className += " active";
 }
 
-/* -------- TIME MACHINE & AR LOGIC -------- */
+/* -------- TIME MACHINE LOGIC -------- */
 async function saveToTM() {
     const year = document.getElementById('tmYear').value;
     const title = document.getElementById('tmTitle').value;
@@ -640,7 +648,7 @@ async function saveToTM() {
         description: description,
         imageUrl: imageUrl,
         videoUrl: videoUrl,
-        createdAt: new Date()
+        createdAt: new Date().toISOString()
     };
 
     try {
@@ -656,6 +664,40 @@ async function saveToTM() {
     }
 }
 
+function loadTMList() {
+  const list = document.getElementById('tmList');
+  if (!list) return;
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  db.collection('timeline').onSnapshot(snap => {
+    const countEl = document.getElementById('tmCount');
+    if (countEl) countEl.textContent = snap.size;
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna matukio ya Time Machine bado.</p>';
+      return;
+    }
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.year || 0) - (b.year || 0));
+    list.innerHTML = '';
+    docs.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <span><strong>${d.year || ''}</strong> - ${d.title || ''}</span>
+        <button class="dl-btn" style="background:#c0392b" onclick="deleteTM('${d.id}')">Futa</button>
+      `;
+      list.appendChild(item);
+    });
+  }, err => {
+    list.innerHTML = '<p style="color:#c0392b">Hitilafu ya kupakia Time Machine.</p>';
+  });
+}
+
+async function deleteTM(id) {
+  if (!confirm('Una uhakika unataka kufuta tukio hili la Time Machine?')) return;
+  await db.collection('timeline').doc(id).delete();
+}
+
+/* -------- AR LOGIC -------- */
 async function saveToAR() {
     const title = document.getElementById('arTitle').value;
     const modelUrl = document.getElementById('arModelUrl').value;
@@ -672,7 +714,7 @@ async function saveToAR() {
         modelUrl: modelUrl,
         imageUrl: imageUrl,
         description: description,
-        createdAt: new Date()
+        createdAt: new Date().toISOString()
     };
 
     try {
@@ -685,6 +727,39 @@ async function saveToAR() {
     } catch (err) {
         alert('Hitilafu: ' + err.message);
     }
+}
+
+function loadARList() {
+  const list = document.getElementById('arList');
+  if (!list) return;
+  list.innerHTML = '<p style="color:#888">Inapakia...</p>';
+  db.collection('ar_models').onSnapshot(snap => {
+    const countEl = document.getElementById('arCount');
+    if (countEl) countEl.textContent = snap.size;
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:#888">Hakuna AR Models bado.</p>';
+      return;
+    }
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    list.innerHTML = '';
+    docs.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'download-item';
+      item.innerHTML = `
+        <span>🔮 <strong>${d.title || ''}</strong></span>
+        <button class="dl-btn" style="background:#c0392b" onclick="deleteAR('${d.id}')">Futa</button>
+      `;
+      list.appendChild(item);
+    });
+  }, err => {
+    list.innerHTML = '<p style="color:#c0392b">Hitilafu ya kupakia AR Models.</p>';
+  });
+}
+
+async function deleteAR(id) {
+  if (!confirm('Una uhakika unataka kufuta AR Model hii?')) return;
+  await db.collection('ar_models').doc(id).delete();
 }
 
 /* -------- SOCIAL ACCOUNTS -------- */
@@ -1348,7 +1423,6 @@ async function handleSiteImageUpload(e) {
     return false;
   }
 
-  /* Hakikisha ni link ya picha halisi */
   if (!url.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) && !url.includes('imgur') && !url.includes('unsplash') && !url.includes('googleusercontent')) {
     if (!confirm('Link hii haionekani kama picha. Unataka kuendelea?')) return false;
   }
@@ -1541,7 +1615,6 @@ function loadQuestionsList() {
 async function deleteQuestion(id) {
   if (!confirm('Una uhakika unataka kufuta swali hili?')) return;
   await db.collection('questions').doc(id).delete();
-  /* onSnapshot itasasisha orodha kiotomatiki */
 }
 
 async function handleUploadImage(e) {
@@ -1581,7 +1654,7 @@ async function loadImageGallery() {
     card.innerHTML = `
       <img src="${d.url}" style="border-radius:8px;margin-bottom:10px;width:100%;height:140px;object-fit:cover">
       <h3 style="font-size:0.95rem">${d.label}</h3>
-      <button class="btn btn-secondary" style="color:#c0392b;border-color:#c0392b;margin-top:8px;width:100%" onclick="deleteImage('${doc.id}','${d.path}')">Futa</button>
+      <button class="btn btn-secondary" style="color:#c0392b;border-color:#c0392b;margin-top:8px;width:100%" onclick="deleteImage('${doc.id}')">Futa</button>
     `;
     gallery.appendChild(card);
   });
@@ -1595,3 +1668,4 @@ async function deleteImage(docId) {
 </script>
 </body>
 </html>
+

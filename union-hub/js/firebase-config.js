@@ -1,23 +1,8 @@
-/* ============================
+/* ============================================================
    UNION HUB TANZANIA - firebase-config.js
-   ============================
-   HATUA ZA KUWEKA DATABASE YAKO (FREE):
+   ============================================================ */
 
-   1. Fungua https://co:nsole.firebase.google.com
-   2. Bonyeza "Add Project" -> ipe jina "union-hub-tz" -> Create.
-   3. Kwenye menu ya kushoto: "Build" -> "Authentication" -> "Get Started"
-      -> Chagua "Email/Password" -> Enable -> Save.
-   4. Kwenye menu: "Build" -> "Firestore Database" -> "Create Database"
-      -> Chagua "Start in test mode" (kwa majaribio) -> Next -> Enable.
-   5. Bonyeza ikoni ya "</>" (Web App) kwenye Project Overview kuandikisha
-      app yako -> ipe jina "union-hub-web" -> Register app.
-   6. Firebase itakupa "firebaseConfig" object - NAKILI thamani zako
-      na uzibandike chini badala ya hizi za mfano.
-
-   MUHIMU: Bila kufanya hatua hizi, login/register/quiz hazitafanya kazi
-   kwa sababu zinahitaji database halisi ya Firebase.
-   ============================ */
-
+// 1. CONFIGURATION YA FIREBASE (Iliyothibitishwa)
 const firebaseConfig = {
   apiKey: "AIzaSyBURKGa_MpkZ6EKrC1uQmthncgu303nxrY",
   authDomain: "muungano-hub.firebaseapp.com",
@@ -27,10 +12,63 @@ const firebaseConfig = {
   appId: "1:91759664055:web:ef0172717cf77ca6646632"
 };
 
-firebase.initializeApp(firebaseConfig);
+// 2. INITIALIZE FIREBASE APP
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+// 3. EXPORT SERVICES KWA AJILI YA APPS ZOTE
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
-// Anzisha App Check kwa ajili ya reCAPTCHA v3
-const appCheck = firebase.appCheck();
-appCheck.activate('6Lf_vEgtAAAAAEf4lDBv6idyfTa9GowJRj4zSMIx', true);
+
+// 4. HELPER FUNCTIONS KWA AJILI YA KURASA ZAKO ZOTE
+
+/**
+ * Kuangalia kama mtumiaji ameingia (Authentication state listener)
+ * @param {Function} callback - Inarudisha (user) akipatikana au null
+ */
+function onAuthStateChange(callback) {
+  auth.onAuthStateChanged((user) => {
+    if (callback) callback(user);
+  });
+}
+
+/**
+ * Kuangalia kama mtumiaji aliyeingia ni Admin
+ * @returns {Promise<boolean>}
+ */
+async function checkIfAdmin() {
+  const user = auth.currentUser;
+  if (!user) return false;
+  
+  try {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    return userDoc.exists && userDoc.data().role === 'admin';
+  } catch (error) {
+    console.error("Kosa la kuangalia Admin status:", error);
+    return false;
+  }
+}
+
+/**
+ * Ongeza idadi ya Page Views kwenye mfumo (Analytics)
+ * @param {string} pageName - Jina la ukurasa (mfano: 'timemachine', 'ar', 'home')
+ */
+async function trackPageView(pageName) {
+  try {
+    const pageRef = db.collection('pageViews').doc(pageName);
+    await pageRef.set({
+      views: firebase.firestore.FieldValue.increment(1),
+      lastVisited: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.warn("Analytics Error:", error);
+  }
+}
+
+// Tekeleza tracking ya page view kiotomatiki ukurasa ukifunguka
+document.addEventListener('DOMContentLoaded', () => {
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  trackPageView(currentPath.replace('.html', ''));
+});

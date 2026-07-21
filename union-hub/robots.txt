@@ -1,12 +1,14 @@
 User-agent: *
 Allow: /
+Allow: /ar.html
+Allow: /timemachine.html
 
-# Zuia Google isiosome kurasa za Admin na Dashboard
+# Zuia Google isisome kurasa za Admin na Akaunti za Watumiaji
 Disallow: /admin.html
 Disallow: /dashboard.html
 Disallow: /profile.html
 Disallow: /login.html
 Disallow: /register.html
 
-# Ambia Google wapi sitemap ipo
+# Link ya Sitemap yako
 Sitemap: https://muungano-hub.netlify.app/sitemap.xml

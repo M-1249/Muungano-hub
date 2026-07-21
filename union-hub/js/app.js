@@ -2,6 +2,31 @@
    UNION HUB TANZANIA - app.js
    ============================ */
 
+/* ---------- SECURITY: INPUT SANITIZATION ---------- */
+function sanitize(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .trim()
+    .slice(0, 2000); /* Zuia maandishi mrefu sana */
+}
+
+/* Rate limiting kwa comments (mtumiaji mmoja hawezi kutuma zaidi ya mara 3 kwa dakika) */
+const _commentTimes = {};
+function canSubmitComment(userId) {
+  const now = Date.now();
+  if (!_commentTimes[userId]) _commentTimes[userId] = [];
+  _commentTimes[userId] = _commentTimes[userId].filter(t => now - t < 60000);
+  if (_commentTimes[userId].length >= 3) return false;
+  _commentTimes[userId].push(now);
+  return true;
+}
+
 /* ---------- PAGE VIEW TRACKING ---------- */
 async function recordPageView(pageName) {
   if (typeof db === 'undefined') return;
@@ -225,6 +250,7 @@ function requireAdmin(callback) {
     if (callback) callback(uh_currentUserData);
   });
 }
+
 function requireLogin(callback) {
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
@@ -561,6 +587,62 @@ function renderResultBody(total, user, passed) {
   `;
 }
 
+/* ---------- 3D MODELS / AR SUPPORT ---------- */
+async function loadARModels(containerId) {
+  const container = document.getElementById(containerId || 'arModelsContainer');
+  if (!container || typeof db === 'undefined') return;
+
+  try {
+    const snap = await db.collection('arModels').get();
+    if (snap.empty) {
+      container.innerHTML = '<p style="color:#888">Hakuna mifano ya 3D iliyowekwa bado.</p>';
+      return;
+    }
+
+    container.innerHTML = snap.docs.map(doc => {
+      const data = doc.data();
+      return `
+        <div class="ar-card" style="border:1px solid #ddd; padding:12px; border-radius:8px; margin-bottom:12px">
+          <h4>${sanitize(data.title)}</h4>
+          <p style="font-size:0.85rem; color:#666">${sanitize(data.description)}</p>
+          <model-viewer src="${data.modelUrl}" ios-src="${data.usdzUrl || ''}" ar ar-modes="webxr scene-viewer quick-look" camera-controls auto-rotate style="width:100%; height:250px; background:#f0f0f0"></model-viewer>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.warn('Error loading AR models:', err);
+  }
+}
+
+/* ---------- COMMENTS MANAGEMENT ---------- */
+async function submitComment(articleId, text) {
+  if (!uh_currentUserData) {
+    showToast('Tafadhali ingia ili kuandika maoni.');
+    return;
+  }
+  if (!canSubmitComment(uh_currentUserData.uid)) {
+    showToast('Umetuma maoni mengi mno kwa haraka. Subiri kidogo.');
+    return;
+  }
+  
+  const sanitizedText = sanitize(text);
+  if (!sanitizedText) return;
+
+  try {
+    await db.collection('comments').add({
+      articleId,
+      text: sanitizedText,
+      userId: uh_currentUserData.uid,
+      userName: uh_currentUserData.name || 'Mtumiaji',
+      status: 'approved', /* Inaweza kubadilishwa kuwa 'pending' kama admin anahitaji review */
+      createdAt: new Date().toISOString()
+    });
+    showToast('Maoni yako yametumwa!');
+  } catch (err) {
+    showToast('Imeshindikana kutuma maoni.');
+  }
+}
+
 /* ---------- INIT NAV ACTIVE STATE ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   const path = window.location.pathname.split('/').pop() || 'index.html';
@@ -699,6 +781,3 @@ async function markAllRead() {
 document.addEventListener('DOMContentLoaded', () => {
   auth.onAuthStateChanged(user => { if (user) initNotificationBell(); });
 });
-
-
-
