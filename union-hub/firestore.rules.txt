@@ -1,0 +1,113 @@
+// WEKA SHERIA HIZI KWENYE FIREBASE CONSOLE:
+// Firestore Database → Rules → Copy paste hii kisha bonyeza Publish
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- UTENGENEZAJI WA HELPER FUNCTIONS NA ULINZI ---
+    
+    // Angalia kama mtumiaji ameingia kwenye mfumo
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Angalia kama mtumiaji ni Admin
+    function isAdmin() {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // --- WATUMIAJI (USERS) ---
+    match /users/{userId} {
+      // Mtumiaji anaweza kusoma/kuandika akaunti yake mwenyewe, au Admin anaweza kusoma profil zote
+      allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // --- MAUDHUI YA UMMA (PUBLIC READ, AUTHENTICATED/ADMIN WRITE) ---
+
+    // Time Machine Collections (Ili timemachine-pro.html isome bila shida)
+    match /timeline/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /timeline_events/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // AR & 3D Models Collections (Ili ar.html isome bila shida)
+    match /ar_models/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /arContent/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Makala, Picha, Video, na Maswali
+    match /articles/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /images/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /videos/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /questions/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /downloads/{doc} {
+      allow read: if true; // Imerekebishwa kuwa public read ili watumiaji waweze kupakua
+      allow write: if isSignedIn();
+    }
+
+    // Maoni (Comments)
+    match /comments/{doc} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    // Mipangilio ya Tovuti & Menu (Site Settings, Nav, Chatbot)
+    match /siteSettings/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /navItems/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /contentBlocks/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /chatbotFAQ/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    match /siteImages/{doc} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // --- DASHBOARD NA METRICS ---
+    match /dashboardItems/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    match /pageViews/{doc} {
+      allow read: if true;  // Imerekebishwa ili kureflect takwimu za watembeleaji kwa wote
+      allow write: if true; // Inaruhusu watembeleaji wa tovuti kuongeza count ya views
+    }
+  }
+}
+
+
