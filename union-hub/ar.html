@@ -72,19 +72,33 @@
         <p style="text-align:center; padding:50px;">Inapakia ulimwengu wa AR...</p>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
     <script src="js/firebase-config.js"></script>
 
     <script>
-        const db = firebase.firestore();
-
+        // Kumbuka: db inatoka js/firebase-config.js (imeshaanzishwa hapo).
         async function loadAR() {
             const container = document.getElementById('arContainer');
-            const snapshot = await db.collection('ar_models').get();
-            
+
+            if (typeof db === 'undefined') {
+                container.innerHTML = '<p style="text-align:center; color:#c0392b;">Imeshindwa kuunganisha na Firebase. Angalia mtandao wako kisha ujaribu tena.</p>';
+                return;
+            }
+
+            let snapshot;
+            try {
+                snapshot = await db.collection('ar_models').get();
+            } catch (error) {
+                console.error('Hitilafu kupakia AR models:', error);
+                container.innerHTML = '<p style="text-align:center; color:#c0392b;">Hitilafu katika kupakua data ya AR.</p>';
+                return;
+            }
+
             if (snapshot.empty) {
-                container.innerHTML = '<p style="text-align:center">Bado hakuna models za AR zilizopakiwa.</p>';
+                container.innerHTML = '<p style="text-align:center; padding:50px;">Bado hakuna models za AR zilizopakiwa. Tafadhali ongeza kupitia Admin.</p>';
                 return;
             }
 
@@ -94,27 +108,43 @@
                 const card = document.createElement('div');
                 card.className = 'ar-card-pro';
                 
-                card.innerHTML = `
-                    <div class="ar-viewer-side">
-                        <model-viewer 
-                            src="${item.modelUrl}" 
-                            ar ar-modes="webxr scene-viewer quick-look" 
-                            camera-controls auto-rotate shadow-intensity="1">
-                            <button slot="ar-button" class="ar-badge-btn" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%);">
-                                👋 IWEKE SEBULENI KWAKO
-                            </button>
-                        </model-viewer>
-                    </div>
-                    <div class="ar-info-side">
-                        <img src="${item.imageUrl || 'https://via.placeholder.com/400x200'}" class="history-img-preview" alt="Picha ya Historia">
-                        <h2>${item.title}</h2>
-                        <p>${item.description}</p>
-                        <div style="display:flex; gap:10px;">
-                            <span style="background:#e3f2fd; color:#2196F3; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">HISTORIA</span>
-                            <span style="background:#e8f5e9; color:#4CAF50; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">3D MODEL</span>
+                const imgFallback = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="100%" height="100%" fill="%23e0e0e0"/></svg>');
+
+                if (item.modelUrl) {
+                    card.innerHTML = `
+                        <div class="ar-viewer-side">
+                            <model-viewer 
+                                src="${item.modelUrl}" 
+                                ar ar-modes="webxr scene-viewer quick-look" 
+                                camera-controls auto-rotate shadow-intensity="1">
+                                <button slot="ar-button" class="ar-badge-btn" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%);">
+                                    👋 IWEKE SEBULENI KWAKO
+                                </button>
+                            </model-viewer>
                         </div>
-                    </div>
-                `;
+                        <div class="ar-info-side">
+                            <img src="${item.imageUrl || imgFallback}" class="history-img-preview" alt="Picha ya Historia">
+                            <h2>${item.title || ''}</h2>
+                            <p>${item.description || ''}</p>
+                            <div style="display:flex; gap:10px;">
+                                <span style="background:#e3f2fd; color:#2196F3; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">HISTORIA</span>
+                                <span style="background:#e8f5e9; color:#4CAF50; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">3D MODEL</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Hakuna link ya .glb - onyesha picha pekee badala ya model-viewer tupu
+                    card.innerHTML = `
+                        <div class="ar-viewer-side" style="display:flex; align-items:center; justify-content:center;">
+                            <img src="${item.imageUrl || imgFallback}" style="width:100%; height:100%; object-fit:cover;" alt="Picha ya Historia">
+                        </div>
+                        <div class="ar-info-side">
+                            <h2>${item.title || ''}</h2>
+                            <p>${item.description || ''}</p>
+                            <p style="color:#c0392b; font-size:13px;">⚠️ Model ya 3D (.glb) haijawekwa bado kwa hii.</p>
+                        </div>
+                    `;
+                }
                 container.appendChild(card);
             });
         }
