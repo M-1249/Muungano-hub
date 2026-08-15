@@ -8,11 +8,37 @@
         :root {
             --gold: #FFD700;
             --blue: #2196F3;
+            --tm-green: #2fae5b;
             --dark: #0a0a0a;
             --glass: rgba(255, 255, 255, 0.1);
         }
 
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; }
+
+        a { color: inherit; }
+
+        /* STARFIELD BACKGROUND */
+        .starfield {
+            position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+            background: radial-gradient(ellipse at center, #101418 0%, #000 80%);
+        }
+        .starfield span {
+            position: absolute; background: #fff; border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: .15; }
+            50% { opacity: 1; }
+        }
+
+        .home-link {
+            position: fixed; top: 18px; left: 18px; z-index: 20;
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+            color: #ddd; text-decoration: none; padding: 8px 16px; border-radius: 30px;
+            font-size: 0.82rem; backdrop-filter: blur(4px); transition: background .2s ease;
+        }
+        .home-link:hover { background: rgba(255,255,255,0.18); }
 
         /* 1. LANDING PAGE */
         #landingPage {
@@ -21,28 +47,33 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
             z-index: 10;
             position: relative;
+            text-align: center;
+            padding: 20px;
         }
 
-        .gear-icon { font-size: 50px; animation: rotateGear 5s linear infinite; margin-bottom: 20px; }
+        .tm-title { font-size: 1rem; letter-spacing: 4px; color: #9aa; text-transform: uppercase; margin-bottom: 6px; }
+        .tm-title span { color: var(--gold); }
+
+        .gear-icon { font-size: 50px; animation: rotateGear 5s linear infinite; margin-bottom: 20px; filter: drop-shadow(0 0 12px rgba(255,215,0,0.4)); }
         @keyframes rotateGear { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .year-selector {
             border: 2px solid var(--gold);
             padding: 15px 40px;
-            border-radius: 10px;
+            border-radius: 14px;
             font-size: 40px;
             font-weight: 900;
             color: var(--gold);
             background: var(--glass);
             margin-bottom: 30px;
             text-align: center;
+            box-shadow: 0 0 30px rgba(255,215,0,0.15);
         }
 
         .start-btn {
-            background: var(--blue);
+            background: linear-gradient(135deg, var(--blue), var(--tm-green));
             color: white;
             border: none;
             padding: 15px 50px;
@@ -53,7 +84,8 @@
             box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
             transition: 0.3s;
         }
-        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px var(--blue); }
+        .start-btn:hover { transform: scale(1.06); box-shadow: 0 0 32px var(--blue); }
+        .start-btn:disabled { cursor: not-allowed; }
 
         /* 2. ANIMATION OVERLAY */
         #travelOverlay {
@@ -73,6 +105,7 @@
             border-radius: 50%;
             position: relative;
             margin-bottom: 30px;
+            box-shadow: 0 0 40px rgba(255,215,0,0.25);
         }
         .clock-hand {
             position: absolute; top: 50%; left: 50%;
@@ -86,32 +119,62 @@
             width: 250px; opacity: 0;
             animation: mapFlash 3s ease-in-out forwards;
         }
-        @keyframes mapFlash { 
+        @keyframes mapFlash {
             0% { opacity: 0; transform: scale(0.5); }
             50% { opacity: 0.8; transform: scale(1.1); filter: brightness(2); }
             100% { opacity: 0; transform: scale(1.5); }
         }
 
-        .fast-dates { font-size: 50px; color: var(--gold); font-weight: bold; }
+        .fast-dates { font-size: 50px; color: var(--gold); font-weight: bold; letter-spacing: 2px; }
+        .travel-caption { color: #888; margin-top: 10px; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; }
 
         /* 3. MAIN CONTENT */
         #mainContent {
             display: none;
             height: 100vh;
-            padding: 40px;
+            padding: 50px 20px 30px;
             overflow-y: auto;
-            background: #111;
+            background: linear-gradient(180deg, #0d0d0d, #111 40%);
+            position: relative;
+            z-index: 5;
         }
 
         .content-box { max-width: 900px; margin: 0 auto; }
-        .back-btn { background: none; border: 1px solid #444; color: #888; padding: 10px 20px; cursor: pointer; margin-bottom: 20px; }
+        .back-btn {
+            background: rgba(255,255,255,0.06); border: 1px solid #333; color: #aaa;
+            padding: 10px 20px; cursor: pointer; margin-bottom: 24px; border-radius: 30px;
+            transition: background .2s ease, color .2s ease;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+        .event-card {
+            animation: fadeUp .5s ease;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Year jump strip */
+        .year-strip {
+            display: flex; gap: 10px; flex-wrap: wrap; margin: 30px 0 10px;
+            padding-top: 20px; border-top: 1px solid #262626;
+        }
+        .year-dot {
+            padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            background: rgba(255,255,255,0.06); border: 1px solid #333; color: #ccc; cursor: pointer;
+            transition: all .2s ease;
+        }
+        .year-dot:hover { background: rgba(255,215,0,0.12); border-color: var(--gold); color: var(--gold); }
+        .year-dot.active { background: var(--gold); color: #111; border-color: var(--gold); }
 
     </style>
 </head>
 <body>
 
+    <div class="starfield" id="starfield"></div>
+    <a href="index.html" class="home-link">← Union Hub</a>
+
     <!-- 1. LANDING PAGE -->
     <div id="landingPage">
+        <div class="tm-title">MUUNGANO <span>TIME MACHINE</span></div>
         <div class="gear-icon">⚙️</div>
         <div class="year-selector">
             <select id="selectedYear" style="background:none; border:none; color:inherit; font-size:inherit; font-weight:inherit; cursor:pointer;">
@@ -129,13 +192,15 @@
         </div>
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Flag-map_of_Tanzania.svg/1200px-Flag-map_of_Tanzania.svg.png" class="map-glow" id="mapAnim">
         <div class="fast-dates" id="dateCounter">1964</div>
+        <div class="travel-caption">Kusafiri kwenye wakati...</div>
     </div>
 
     <!-- 3. MAIN CONTENT -->
     <div id="mainContent">
         <div class="content-box">
             <button class="back-btn" onclick="location.reload()">◀️ RUDI NYUMA</button>
-            <div id="eventDisplay"></div>
+            <div id="eventDisplay" class="event-card"></div>
+            <div class="year-strip" id="yearStrip"></div>
         </div>
     </div>
 
@@ -146,6 +211,22 @@
     <script src="js/firebase-config.js"></script>
 
     <script>
+        // Generate starfield
+        (function buildStars() {
+            const field = document.getElementById('starfield');
+            const count = 90;
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                const size = (Math.random() * 2 + 1).toFixed(1);
+                const top = (Math.random() * 100).toFixed(2);
+                const left = (Math.random() * 100).toFixed(2);
+                const dur = (Math.random() * 3 + 2).toFixed(2);
+                const delay = (Math.random() * 4).toFixed(2);
+                html += `<span style="width:${size}px;height:${size}px;top:${top}%;left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;"></span>`;
+            }
+            field.innerHTML = html;
+        })();
+
         // MUHIMU: Admin (admin.html) huhifadhi matukio kwenye collection ya
         // 'timeline' (SIYO 'timeline_events'). Ukurasa huu lazima usome
         // kutoka collection ile ile, la sivyo matukio uliyoongeza admin
@@ -209,11 +290,33 @@
                 await loadEventData(year);
                 overlay.style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
+                buildYearStrip(year);
             }, 3000);
+        }
+
+        function buildYearStrip(activeYear) {
+            const strip = document.getElementById('yearStrip');
+            const years = [...new Set(allTimelineEvents.map(e => e.year))]
+                .filter(y => y !== undefined && y !== null)
+                .sort((a, b) => a - b);
+
+            strip.innerHTML = years.map(y => `
+                <span class="year-dot ${String(y) === String(activeYear) ? 'active' : ''}" onclick="jumpToYear('${y}')">${y}</span>
+            `).join('');
+        }
+
+        async function jumpToYear(year) {
+            await loadEventData(year);
+            buildYearStrip(year);
+            document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function loadEventData(year) {
             const display = document.getElementById('eventDisplay');
+            display.classList.remove('event-card');
+            void display.offsetWidth; // restart animation
+            display.classList.add('event-card');
+
             const event = allTimelineEvents.find(e => String(e.year) === String(year));
 
             if (!event) {
@@ -230,14 +333,14 @@
             }
 
             display.innerHTML = `
-                <h1 style="color:var(--gold); font-size:3rem;">📅 ${event.year}</h1>
-                <h2 style="font-size:2rem; margin-bottom:30px;">"${event.title}"</h2>
-                ${event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.title}" style="width:100%; max-height:320px; object-fit:cover; border-radius:15px; margin-bottom:20px;">` : ''}
-                <div style="background:#222; padding:30px; border-radius:15px; border-left:5px solid var(--blue);">
-                    <p style="font-size:1.2rem; line-height:1.6;">${event.description || ''}</p>
+                <h1 style="color:var(--gold); font-size:3rem; margin-bottom:6px;">📅 ${event.year}</h1>
+                <h2 style="font-size:2rem; margin-bottom:30px; font-weight:600;">${event.title || ''}</h2>
+                ${event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.title || ''}" style="width:100%; max-height:320px; object-fit:cover; border-radius:15px; margin-bottom:20px;">` : ''}
+                <div style="background:#1a1a1a; padding:30px; border-radius:15px; border-left:5px solid var(--tm-green);">
+                    <p style="font-size:1.15rem; line-height:1.7; color:#ddd;">${event.description || ''}</p>
                 </div>
 
-                ${mediaButtons.length ? `<div style="margin-top:40px; display:flex; gap:15px; flex-wrap:wrap;">${mediaButtons.join('')}</div>` : ''}
+                ${mediaButtons.length ? `<div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">${mediaButtons.join('')}</div>` : ''}
             `;
         }
 

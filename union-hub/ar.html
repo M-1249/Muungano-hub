@@ -3,42 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔮 AR 3D Experience | Muungano Hub</title>
+    <title>🔮 AR 3D Experience | Union Hub Tanzania</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        .ar-hero { background: linear-gradient(135deg, #2196F3, #4CAF50); color: white; padding: 60px 20px; text-align: center; }
-        
-        .ar-grid { max-width: 1100px; margin: -40px auto 40px; padding: 0 20px; display: grid; grid-template-columns: 1fr; gap: 30px; }
-        
+        body { background: var(--cream); }
+
+        .ar-hero {
+            background: linear-gradient(135deg, var(--black), #14301d 55%, var(--green));
+            color: var(--text-light);
+            padding: 70px 20px 90px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .ar-hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(circle at 15% 25%, rgba(242,193,78,0.20), transparent 45%),
+                radial-gradient(circle at 85% 75%, rgba(47,174,91,0.28), transparent 50%);
+            animation: arGlow 10s ease-in-out infinite alternate;
+        }
+        @keyframes arGlow {
+            from { transform: translate(0,0) scale(1); }
+            to { transform: translate(-4%, 4%) scale(1.1); }
+        }
+        .ar-hero h1, .ar-hero p, .ar-hero .ar-pill { position: relative; z-index: 1; }
+        .ar-hero h1 { color: var(--yellow); font-family: var(--font-display); font-size: clamp(1.7rem, 4vw, 2.4rem); margin-bottom: 10px; }
+        .ar-hero p { color: #dfe7e0; max-width: 560px; margin: 0 auto; }
+        .ar-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+            color: #fff; padding: 8px 18px; border-radius: 30px; font-size: 0.85rem;
+            margin-top: 18px;
+        }
+
+        /* HOW IT WORKS strip */
+        .ar-how {
+            max-width: 1100px; margin: -50px auto 10px; padding: 0 20px;
+            position: relative; z-index: 2;
+        }
+        .ar-how-inner {
+            background: #fff; border-radius: 18px; box-shadow: 0 12px 34px rgba(0,0,0,0.12);
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+            overflow: hidden;
+        }
+        .ar-how-step {
+            padding: 22px 20px; text-align: center; border-right: 1px solid #eee;
+        }
+        .ar-how-step:last-child { border-right: none; }
+        .ar-how-step .num {
+            width: 34px; height: 34px; border-radius: 50%; background: var(--green-light); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+            margin: 0 auto 10px;
+        }
+        .ar-how-step h4 { font-family: var(--font-display); font-size: 0.95rem; margin-bottom: 6px; color: var(--black); }
+        .ar-how-step p { font-size: 0.82rem; color: #666; margin: 0; }
+
+        .ar-grid { max-width: 1100px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr; gap: 30px; }
+
         .ar-card-pro {
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             display: grid;
             grid-template-columns: 1fr 1.2fr;
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity .6s ease, transform .6s ease, box-shadow .3s ease;
         }
+        .ar-card-pro.in-view { opacity: 1; transform: translateY(0); }
+        .ar-card-pro:hover { box-shadow: 0 16px 40px rgba(0,0,0,0.14); }
 
-        .ar-viewer-side { background: #eee; position: relative; height: 450px; }
+        .ar-viewer-side { background: #eef1ee; position: relative; height: 450px; }
         model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
-        
+
         .ar-info-side { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
-        .ar-info-side h2 { margin: 0 0 15px 0; color: #2196F3; font-size: 28px; }
+        .ar-info-side h2 { margin: 0 0 15px 0; color: var(--green); font-family: var(--font-display); font-size: 26px; }
         .ar-info-side p { color: #555; line-height: 1.7; font-size: 16px; margin-bottom: 25px; }
-        
+
         .history-img-preview {
             width: 100%;
             height: 150px;
             object-fit: cover;
             border-radius: 12px;
             margin-bottom: 20px;
-            border: 3px solid #f0f2f5;
+            border: 3px solid var(--cream);
         }
 
         .ar-badge-btn {
-            background: #2196F3;
+            background: linear-gradient(135deg, var(--green), var(--green-light));
             color: white;
             border: none;
             padding: 15px 30px;
@@ -50,41 +106,114 @@
             gap: 10px;
             width: fit-content;
             transition: 0.3s;
+            box-shadow: 0 6px 18px rgba(27,122,61,0.35);
         }
-        .ar-badge-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4); }
+        .ar-badge-btn:hover { transform: scale(1.05); box-shadow: 0 8px 22px rgba(27,122,61,0.5); }
+
+        .ar-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+        .ar-tag { padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .ar-tag.historia { background: #fff4d6; color: #a3781a; }
+        .ar-tag.model3d { background: #e8f5e9; color: var(--green); }
+
+        .ar-empty, .ar-loading-msg { text-align: center; padding: 60px 20px; color: #777; }
 
         @media (max-width: 850px) {
             .ar-card-pro { grid-template-columns: 1fr; }
-            .ar-viewer-side { height: 350px; }
+            .ar-viewer-side { height: 320px; }
             .ar-info-side { padding: 25px; }
+            .ar-how-inner { grid-template-columns: 1fr; }
+            .ar-how-step { border-right: none; border-bottom: 1px solid #eee; }
+            .ar-how-step:last-child { border-bottom: none; }
         }
     </style>
 </head>
 <body>
 
+<nav class="navbar">
+  <a href="index.html" class="logo">UNION<span>HUB</span> TZ</a>
+  <button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html" data-i18n="nav_home">Home</a>
+    <a href="history.html" data-i18n="nav_history">Historia</a>
+    <a href="benefits.html" data-i18n="nav_benefits">Faida</a>
+    <a href="makala.html">Makala</a>
+    <a href="video.html">Video</a>
+    <a href="picha.html">Picha</a>
+    <a href="ar.html">AR 3D</a>
+    <a href="timemachine.html">Time Machine</a>
+    <a href="quiz.html" data-i18n="nav_quiz">Quiz</a>
+    <a href="login.html" class="nav-cta" data-i18n="nav_login">Login</a>
+    <button class="lang-btn" id="langToggleBtn" onclick="toggleLang()">EN</button>
+  </div>
+</nav>
+
     <div class="ar-hero">
         <h1>🔮 Muungano AR 3D Experience</h1>
-        <p>Gusa alama ya AR kuona historia ikijitokeza mbele yako</p>
+        <p>Gusa kitufe cha AR uone historia ya Muungano ikijitokeza kwa 3D, moja kwa moja ndani ya chumba chako.</p>
+        <span class="ar-pill">📱 Inafanya kazi kwenye simu yenye kamera</span>
+    </div>
+
+    <div class="ar-how">
+      <div class="ar-how-inner">
+        <div class="ar-how-step">
+          <div class="num">1</div>
+          <h4>Chagua Kipengele</h4>
+          <p>Chagua tukio la historia lenye alama ya 3D MODEL hapa chini.</p>
+        </div>
+        <div class="ar-how-step">
+          <div class="num">2</div>
+          <h4>Bonyeza "Iweke Sebuleni"</h4>
+          <p>Kamera ya simu yako itafunguka kutafuta sakafu ya chumba chako.</p>
+        </div>
+        <div class="ar-how-step">
+          <div class="num">3</div>
+          <h4>Angalia 3D Chumbani Kwako</h4>
+          <p>Kipengele cha 3D kitawekwa kwenye chumba chako halisi — zunguka kukiona pande zote.</p>
+        </div>
+      </div>
     </div>
 
     <div class="ar-grid" id="arContainer">
         <!-- Data itajazwa hapa na JS -->
-        <p style="text-align:center; padding:50px;">Inapakia ulimwengu wa AR...</p>
+        <p class="ar-loading-msg">Inapakia ulimwengu wa AR...</p>
     </div>
+
+<footer>
+  <div class="footer-bottom">
+    &copy; 2026 Union Hub Tanzania. Haki zote zimehifadhiwa.<br>
+    <span style="font-size:0.75rem;color:#777">Tovuti hii imetengenezwa na <strong>Mkungu Alias</strong> | mkungujames@gmail.com | Dodoma, Tanzania</span>
+  </div>
+</footer>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
     <script src="js/firebase-config.js"></script>
+    <script src="js/app.js"></script>
 
     <script>
         // Kumbuka: db inatoka js/firebase-config.js (imeshaanzishwa hapo).
+        let arObserver = null;
+
+        function observeArCards() {
+            if (arObserver) arObserver.disconnect();
+            arObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        arObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.ar-card-pro').forEach(card => arObserver.observe(card));
+        }
+
         async function loadAR() {
             const container = document.getElementById('arContainer');
 
             if (typeof db === 'undefined') {
-                container.innerHTML = '<p style="text-align:center; color:#c0392b;">Imeshindwa kuunganisha na Firebase. Angalia mtandao wako kisha ujaribu tena.</p>';
+                container.innerHTML = '<p class="ar-empty">Imeshindwa kuunganisha na Firebase. Angalia mtandao wako kisha ujaribu tena.</p>';
                 return;
             }
 
@@ -93,32 +222,38 @@
                 snapshot = await db.collection('ar_models').get();
             } catch (error) {
                 console.error('Hitilafu kupakia AR models:', error);
-                container.innerHTML = '<p style="text-align:center; color:#c0392b;">Hitilafu katika kupakua data ya AR.</p>';
+                container.innerHTML = '<p class="ar-empty">Hitilafu katika kupakua data ya AR.</p>';
                 return;
             }
 
             if (snapshot.empty) {
-                container.innerHTML = '<p style="text-align:center; padding:50px;">Bado hakuna models za AR zilizopakiwa. Tafadhali ongeza kupitia Admin.</p>';
+                container.innerHTML = '<p class="ar-empty">Bado hakuna models za AR zilizopakiwa. Tafadhali ongeza kupitia Admin.</p>';
                 return;
             }
 
             container.innerHTML = '';
+            let i = 0;
             snapshot.forEach(doc => {
                 const item = doc.data();
                 const card = document.createElement('div');
                 card.className = 'ar-card-pro';
-                
+                card.style.transitionDelay = Math.min(i, 8) * 80 + 'ms';
+                i++;
+
                 const imgFallback = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="100%" height="100%" fill="%23e0e0e0"/></svg>');
 
                 if (item.modelUrl) {
                     card.innerHTML = `
                         <div class="ar-viewer-side">
-                            <model-viewer 
-                                src="${item.modelUrl}" 
-                                ar ar-modes="webxr scene-viewer quick-look" 
-                                camera-controls auto-rotate shadow-intensity="1">
+                            <model-viewer
+                                src="${item.modelUrl}"
+                                ar ar-modes="webxr scene-viewer quick-look"
+                                ar-placement="floor"
+                                ar-scale="auto"
+                                camera-controls auto-rotate shadow-intensity="1"
+                                environment-image="neutral" exposure="1">
                                 <button slot="ar-button" class="ar-badge-btn" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%);">
-                                    👋 IWEKE SEBULENI KWAKO
+                                    📷 IWEKE CHUMBANI KWAKO
                                 </button>
                             </model-viewer>
                         </div>
@@ -126,9 +261,9 @@
                             <img src="${item.imageUrl || imgFallback}" class="history-img-preview" alt="Picha ya Historia">
                             <h2>${item.title || ''}</h2>
                             <p>${item.description || ''}</p>
-                            <div style="display:flex; gap:10px;">
-                                <span style="background:#e3f2fd; color:#2196F3; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">HISTORIA</span>
-                                <span style="background:#e8f5e9; color:#4CAF50; padding:5px 15px; border-radius:20px; font-size:12px; font-weight:bold;">3D MODEL</span>
+                            <div class="ar-tags">
+                                <span class="ar-tag historia">HISTORIA</span>
+                                <span class="ar-tag model3d">3D MODEL</span>
                             </div>
                         </div>
                     `;
@@ -147,6 +282,8 @@
                 }
                 container.appendChild(card);
             });
+
+            observeArCards();
         }
 
         window.onload = loadAR;
