@@ -46,6 +46,8 @@
 </nav>
 
 <header class="hero" id="heroSection">
+  <div class="hero-slideshow" id="heroSlideshow" aria-hidden="true"></div>
+  <div class="hero-dots" id="heroDots" aria-hidden="true"></div>
   <h1 data-i18n="hero_title">Muungano Wetu, Nguvu Yetu</h1>
   <p data-i18n="hero_sub">Jukwaa la kielimu kuhusu historia, faida, na umuhimu wa Muungano wa Tanganyika na Zanzibar.</p>
   <div class="hero-buttons">
@@ -117,9 +119,52 @@
 <script src="js/i18n.js"></script>
 <script src="js/chatbot.js"></script>
 <script>
+let heroSlideTimer = null;
+
+async function loadHeroSlideshow() {
+  const slideshow = document.getElementById('heroSlideshow');
+  const dotsWrap = document.getElementById('heroDots');
+  if (!slideshow) return;
+
+  try {
+    // Picha za slideshow zinatoka moja kwa moja kwenye picha alizopakia
+    // Admin kupitia paneli ya "Pakia Picha" (collection ya 'images') —
+    // ile ile inayotumika kwenye picha.html.
+    const snap = await db.collection('images').orderBy('createdAt', 'desc').limit(6).get();
+    if (snap.empty) return; // hero_bg ya static (chini) itaendelea kuonekana
+
+    const photos = snap.docs.map(d => d.data()).filter(p => p.url);
+    if (!photos.length) return;
+
+    slideshow.innerHTML = photos.map((p, i) => `
+      <div class="hero-slide ${i % 2 === 1 ? 'zoom-out' : ''} ${i === 0 ? 'active' : ''}"
+           style="background-image:url('${p.url}')" data-index="${i}"></div>
+    `).join('');
+
+    if (photos.length > 1) {
+      dotsWrap.innerHTML = photos.map((_, i) =>
+        `<span class="${i === 0 ? 'active' : ''}" data-index="${i}" onclick="goToHeroSlide(${i})"></span>`
+      ).join('');
+
+      let current = 0;
+      heroSlideTimer = setInterval(() => {
+        current = (current + 1) % photos.length;
+        goToHeroSlide(current);
+      }, 5000);
+    }
+  } catch (err) { /* silently ignore — background gradient inabaki */ }
+}
+
+function goToHeroSlide(index) {
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots = document.querySelectorAll('.hero-dots span');
+  slides.forEach((s, i) => s.classList.toggle('active', i === index));
+  dots.forEach((d, i) => d.classList.toggle('active', i === index));
+}
+
 async function loadSiteImages() {
   try {
-    /* Hero background image */
+    /* Hero background image (hutumika tu kama Admin hajapakia picha za gallery) */
     const heroDoc = await db.collection('siteImages').doc('hero_bg').get();
     const hero = document.getElementById('heroSection');
     if (heroDoc.exists && heroDoc.data().url && hero) {
@@ -183,6 +228,7 @@ async function runGlobalSearch() {
 document.getElementById('globalSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') runGlobalSearch(); });
 
 loadSiteImages();
+loadHeroSlideshow();
 recordPageView('home');
 </script>
 </body>

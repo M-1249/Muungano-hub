@@ -5,6 +5,143 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Picha | Union Hub Tanzania</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+  .photo-hero {
+    background: linear-gradient(135deg, var(--black), #142a1c 60%, var(--green));
+    color: var(--text-light);
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(242,193,78,0.18), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(47,174,91,0.25), transparent 50%);
+    animation: driftGlow 12s ease-in-out infinite alternate;
+  }
+  @keyframes driftGlow {
+    from { transform: translate(0,0) scale(1); }
+    to { transform: translate(-3%, 3%) scale(1.08); }
+  }
+  .photo-hero h1, .photo-hero p { position: relative; z-index: 1; }
+  .photo-hero h1 { color: var(--yellow); }
+
+  .photo-toolbar {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 26px;
+  }
+  .photo-search-wrap { position: relative; max-width: 420px; flex: 1; min-width: 220px; }
+  .photo-search-wrap input {
+    width: 100%; padding: 11px 16px 11px 40px; border: 1.5px solid #ddd;
+    border-radius: 30px; font-size: 0.9rem; transition: border-color .2s, box-shadow .2s;
+  }
+  .photo-search-wrap input:focus {
+    outline: none; border-color: var(--green-light);
+    box-shadow: 0 0 0 3px rgba(47,174,91,0.15);
+  }
+  .photo-search-wrap::before {
+    content: '🔍'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 0.9rem; opacity: .6;
+  }
+  .photo-count {
+    font-size: 0.82rem; color: #666; background: #eef3ee; padding: 6px 14px;
+    border-radius: 20px; white-space: nowrap;
+  }
+
+  /* Masonry-ish animated grid */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+
+  .photo-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #eee;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.08);
+    cursor: pointer;
+    aspect-ratio: 4 / 3;
+    opacity: 0;
+    transform: translateY(28px) scale(.96);
+    transition: opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1),
+                box-shadow .3s ease;
+  }
+  .photo-card.in-view { opacity: 1; transform: translateY(0) scale(1); }
+  .photo-card:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.18); }
+
+  .photo-card img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .6s ease;
+  }
+  .photo-card:hover img { transform: scale(1.08); }
+
+  .photo-card .overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(13,19,16,0.85) 0%, rgba(13,19,16,0.15) 55%, transparent 75%);
+    display: flex; align-items: flex-end; padding: 14px;
+    opacity: 0; transition: opacity .3s ease;
+  }
+  .photo-card:hover .overlay, .photo-card:focus .overlay { opacity: 1; }
+  .photo-card .overlay h3 {
+    color: #fff; font-size: 0.92rem; font-weight: 600; margin: 0;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .photo-card .zoom-hint {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(255,255,255,0.9); color: var(--black);
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; opacity: 0; transform: scale(.7);
+    transition: opacity .25s ease, transform .25s ease;
+  }
+  .photo-card:hover .zoom-hint { opacity: 1; transform: scale(1); }
+
+  .photo-empty { color: #888; padding: 30px 0; text-align: center; }
+  .photo-skel {
+    border-radius: 14px; aspect-ratio: 4/3;
+    background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+  /* Lightbox */
+  #lightbox {
+    position: fixed; inset: 0; background: rgba(5,8,6,0.94);
+    display: none; align-items: center; justify-content: center;
+    z-index: 999; padding: 30px 16px;
+    opacity: 0; transition: opacity .25s ease;
+  }
+  #lightbox.open { display: flex; opacity: 1; }
+  #lightbox figure {
+    max-width: 900px; width: 100%; margin: 0;
+    animation: lbPop .35s cubic-bezier(.2,.8,.3,1);
+  }
+  @keyframes lbPop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  #lightbox img {
+    width: 100%; max-height: 72vh; object-fit: contain; border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  #lightbox figcaption {
+    color: var(--yellow); text-align: center; margin-top: 14px; font-size: 1rem; font-weight: 600;
+  }
+  .lb-close, .lb-nav {
+    position: absolute; background: rgba(255,255,255,0.1); color: #fff; border: none;
+    border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .lb-close:hover, .lb-nav:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); }
+  .lb-close { top: 18px; right: 18px; width: 42px; height: 42px; font-size: 1.3rem; }
+  .lb-nav { top: 50%; transform: translateY(-50%); width: 48px; height: 48px; font-size: 1.4rem; }
+  .lb-prev { left: 14px; } .lb-next { right: 14px; }
+
+  @media (max-width: 600px) {
+    .lb-nav { width: 38px; height: 38px; font-size: 1.1rem; }
+  }
+</style>
 </head>
 <body>
 
@@ -25,19 +162,36 @@
   </div>
 </nav>
 
-<header class="hero" style="padding:50px 20px 60px">
-  <h1>Picha za Muungano</h1>
-  <p>Picha zinazohusu historia na maisha ya Muungano wa Tanzania.</p>
+<header class="hero photo-hero" style="padding:60px 20px 70px">
+  <h1>📸 Picha za Muungano</h1>
+  <p>Picha zinazohusu historia na maisha ya Muungano wa Tanzania — zinazopakiwa moja kwa moja na Admin.</p>
 </header>
 
 <section class="section">
-  <div class="field" style="max-width:420px;margin-bottom:20px">
-    <input type="text" id="photoSearch" placeholder="🔍 Tafuta picha..." oninput="filterPhotos()" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:30px;font-size:0.9rem">
+  <div class="photo-toolbar">
+    <div class="photo-search-wrap">
+      <input type="text" id="photoSearch" placeholder="Tafuta picha..." oninput="filterPhotos()">
+    </div>
+    <span class="photo-count" id="photoCount">Inapakia...</span>
   </div>
-  <div class="card-grid" id="photoGallery">
-    <p style="color:#888">Inapakia picha...</p>
+  <div class="photo-grid" id="photoGallery">
+    <div class="photo-skel"></div>
+    <div class="photo-skel"></div>
+    <div class="photo-skel"></div>
+    <div class="photo-skel"></div>
   </div>
 </section>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="if(event.target===this) closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <button class="lb-nav lb-prev" onclick="stepLightbox(-1)">‹</button>
+  <button class="lb-nav lb-next" onclick="stepLightbox(1)">›</button>
+  <figure>
+    <img id="lightboxImg" src="" alt="">
+    <figcaption id="lightboxCaption"></figcaption>
+  </figure>
+</div>
 
 <footer>
   <div class="footer-bottom">
@@ -55,31 +209,61 @@
 <script src="js/chatbot.js"></script>
 <script>
 let ALL_PHOTOS = [];
+let VISIBLE_PHOTOS = [];
+let lightboxIndex = 0;
+let photoObserver = null;
 
 async function loadPhotos() {
   const gallery = document.getElementById('photoGallery');
+  const countEl = document.getElementById('photoCount');
   try {
     const snap = await db.collection('images').orderBy('createdAt', 'desc').get();
     if (snap.empty) {
-      gallery.innerHTML = '<p style="color:#888">Hakuna picha bado.</p>';
+      gallery.innerHTML = '<p class="photo-empty">Hakuna picha bado. Zitaonekana hapa mara Admin atakapopakia.</p>';
+      countEl.textContent = '0 picha';
       return;
     }
     ALL_PHOTOS = snap.docs.map(doc => doc.data());
     renderPhotos(ALL_PHOTOS);
   } catch (err) {
-    gallery.innerHTML = '<p style="color:#888">Hakuna picha bado.</p>';
+    gallery.innerHTML = '<p class="photo-empty">Hakuna picha bado.</p>';
+    countEl.textContent = '';
   }
 }
 
 function renderPhotos(list) {
   const gallery = document.getElementById('photoGallery');
-  if (!list.length) { gallery.innerHTML = '<p style="color:#888">Hakuna picha iliyolingana.</p>'; return; }
-  gallery.innerHTML = list.map(d => `
-    <div class="card">
-      <img src="${d.url}" style="width:100%;border-radius:8px;margin-bottom:10px;height:160px;object-fit:cover">
-      <h3 style="font-size:0.95rem">${d.label}</h3>
+  const countEl = document.getElementById('photoCount');
+  VISIBLE_PHOTOS = list;
+  countEl.textContent = list.length + (list.length === 1 ? ' picha' : ' picha');
+
+  if (!list.length) {
+    gallery.innerHTML = '<p class="photo-empty">Hakuna picha iliyolingana na utafutaji wako.</p>';
+    return;
+  }
+
+  gallery.innerHTML = list.map((d, i) => `
+    <div class="photo-card" tabindex="0" style="transition-delay:${Math.min(i, 10) * 60}ms" onclick="openLightbox(${i})" onkeydown="if(event.key==='Enter') openLightbox(${i})">
+      <img src="${d.url}" alt="${d.label || 'Picha ya Muungano'}" loading="lazy">
+      <span class="zoom-hint">⤢</span>
+      <div class="overlay"><h3>${d.label || ''}</h3></div>
     </div>
   `).join('');
+
+  observePhotoCards();
+}
+
+function observePhotoCards() {
+  if (photoObserver) photoObserver.disconnect();
+  photoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        photoObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.photo-card').forEach(card => photoObserver.observe(card));
 }
 
 function filterPhotos() {
@@ -87,6 +271,38 @@ function filterPhotos() {
   if (!q) { renderPhotos(ALL_PHOTOS); return; }
   renderPhotos(ALL_PHOTOS.filter(d => (d.label || '').toLowerCase().includes(q)));
 }
+
+function openLightbox(index) {
+  lightboxIndex = index;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function updateLightbox() {
+  const item = VISIBLE_PHOTOS[lightboxIndex];
+  if (!item) return;
+  document.getElementById('lightboxImg').src = item.url;
+  document.getElementById('lightboxImg').alt = item.label || '';
+  document.getElementById('lightboxCaption').textContent = item.label || '';
+}
+
+function stepLightbox(dir) {
+  lightboxIndex = (lightboxIndex + dir + VISIBLE_PHOTOS.length) % VISIBLE_PHOTOS.length;
+  updateLightbox();
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') stepLightbox(-1);
+  if (e.key === 'ArrowRight') stepLightbox(1);
+});
 
 loadPhotos();
 recordPageView('picha');
